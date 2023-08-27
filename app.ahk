@@ -63,8 +63,6 @@ create_pic_bitmap_cache() {
 		}
 		hBitmap_cache.Push({pBitmap:0,pBitmapShow:0,G:0,hBitmapShow:0})
 		hBitmap_cache[hBitmap_cache.Length].pBitmap := picture_array[A_Index]
-		; MsgBox picture_array[A_Index]
-		; MsgBox hBitmap_cache[hBitmap_cache.Length].pBitmap
 		Gdip_GetImageDimensions(hBitmap_cache[hBitmap_cache.Length].pBitmap, &W, &H)
 		percent := ctrlH / H
 		picW := W * percent
