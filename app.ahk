@@ -23,6 +23,7 @@ OnExit(trueExit)
 ; your code below
 
 MonitorGet(1, &Left, &Top, &Right, &Bottom)
+DPIScale := A_ScreenDPI / 96
 Screen_Height := Bottom - Top
 Screen_Width := Right - Left
 picture_array := [-1, -1]
@@ -68,7 +69,7 @@ pic_on_click(thisGui, GuiCtrlObj) {
 }
 
 create_pic_bitmap_cache() {
-	global picture_array, pic
+	global picture_array, pic, DPIScale
 	pic.GetPos(, , , &ctrlH)
 	loop 2 {
 		if (picture_array[A_Index] < 0) {
@@ -77,7 +78,7 @@ create_pic_bitmap_cache() {
 		hBitmap_cache.Push({ pBitmap: 0, pBitmapShow: 0, G: 0, hBitmapShow: 0 })
 		hBitmap_cache[hBitmap_cache.Length].pBitmap := picture_array[A_Index]
 		Gdip_GetImageDimensions(hBitmap_cache[hBitmap_cache.Length].pBitmap, &W, &H)
-		percent := ctrlH / H
+		percent := ctrlH / H * DPIScale
 		picW := W * percent
 		picH := H * percent
 		hBitmap_cache[hBitmap_cache.Length].pBitmapShow := Gdip_CreateBitmap(picW, picH)
@@ -95,14 +96,20 @@ create_pic_bitmap_cache() {
 }
 
 pic_ctrl_set_size() {
-	global picture_array, pic, Screen_Width, Screen_Height
+	global picture_array, pic, Screen_Width, Screen_Height, DPIScale
 	h_max := 0
+	w_max := 0
 	ratio := 0
+	W := 0
+	H := 0
 	loop 2 {
 		if (picture_array[A_Index] > 0) {
 			Gdip_GetImageDimensions(picture_array[A_Index], &W, &H)
 			if (H > h_max) {
 				h_max := H
+			}
+			if (W > w_max) {
+				w_max := W
 			}
 			if (W / H > ratio) {
 				ratio := W / H
@@ -112,15 +119,19 @@ pic_ctrl_set_size() {
 
 	minW := 400
 	minH := 400
-	maxW := 0.5 * Screen_Width
-	maxH := 0.7 * Screen_Height
+	maxW := 0.95 * Screen_Width / DPIScale
+	maxH := 0.85 * Screen_Height / DPIScale
 
 	percent := 1
-	if (h_max > maxH) {
-		percent := maxH / h_max
+	if (h_max > maxH * DPIScale) {
+		percent := Min(percent, maxH / h_max)
 	}
-	ctrlH := h_max * percent
-	ctrlW := ctrlH * ratio
+	if (w_max > maxW * DPIScale) {
+		percent := Min(percent, maxW / w_max)
+	}
+	ctrlH := Round(h_max * percent) + 1
+	ctrlW := Round(ctrlH * ratio) + 1
+	MsgBox("hmax=" h_max "`nW=" W "`nctrlW=" ctrlW "`nH=" H "`nctrlH=" ctrlH "`nDPIScale=" DPIScale)
 	pic.Move(20, , ctrlW, ctrlH)
 	pic.gui.Show("AutoSize")
 	pic.Redraw()
