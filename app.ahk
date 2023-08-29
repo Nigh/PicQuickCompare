@@ -53,6 +53,9 @@ if (A_Args.Length > 0) {
 		mygui_DropFiles(mygui, 0, para_pic, 0, 0)
 	}
 }
+HotIfWinActive "ahk_id" mygui.Hwnd
+Hotkey "Esc", myGui_Close
+HotIf
 Return
 
 pic_on_click(thisGui, GuiCtrlObj) {
