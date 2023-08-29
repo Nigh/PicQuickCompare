@@ -1,5 +1,4 @@
-﻿
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 SetWorkingDir(A_ScriptDir)
 #SingleInstance force
 #include meta.ahk
@@ -11,7 +10,7 @@ SetWorkingDir(A_ScriptDir)
 #include prod.ahk
 
 ; if you need admin privilege, enable it.
-if(0)
+if (0)
 {
 	UAC()
 }
@@ -43,11 +42,22 @@ mygui.Add("Link", "xp y+0", 'GitHub: <a href="https://github.com/Nigh">xianii</a
 pic := mygui.Add("Picture", "x20 w500 h400 0xE 0x200 0x800000 -0x40")
 pic.OnEvent("Click", pic_on_click)
 mygui.Show("AutoSize")
+
+if (A_Args.Length > 0) {
+	para_pic := Array()
+	for n, GivenPath in A_Args {
+		Loop Files, GivenPath, "F"  ; Include files and directories.
+			para_pic.Push(A_LoopFileFullPath)
+	}
+	if (para_pic.Length > 0) {
+		mygui_DropFiles(mygui, 0, para_pic, 0, 0)
+	}
+}
 Return
 
 pic_on_click(thisGui, GuiCtrlObj) {
 	global picture_array, pic
-	if(picture_array[2] > 0) {
+	if (picture_array[2] > 0) {
 		mygui_ctrl_show_pic(pic, picture_array[2])
 		KeyWait "LButton"
 		mygui_ctrl_show_pic(pic, picture_array[1])
@@ -58,10 +68,10 @@ create_pic_bitmap_cache() {
 	global picture_array, pic
 	pic.GetPos(, , , &ctrlH)
 	loop 2 {
-		if(picture_array[A_Index] < 0) {
+		if (picture_array[A_Index] < 0) {
 			break
 		}
-		hBitmap_cache.Push({pBitmap:0,pBitmapShow:0,G:0,hBitmapShow:0})
+		hBitmap_cache.Push({ pBitmap: 0, pBitmapShow: 0, G: 0, hBitmapShow: 0 })
 		hBitmap_cache[hBitmap_cache.Length].pBitmap := picture_array[A_Index]
 		Gdip_GetImageDimensions(hBitmap_cache[hBitmap_cache.Length].pBitmap, &W, &H)
 		percent := ctrlH / H
@@ -74,7 +84,7 @@ create_pic_bitmap_cache() {
 		Gdip_DrawImage(hBitmap_cache[hBitmap_cache.Length].G, hBitmap_cache[hBitmap_cache.Length].pBitmap, 0, 0, picW, picH)
 		hBitmap_cache[hBitmap_cache.Length].hBitmapShow := Gdip_CreateHBITMAPFromBitmap(hBitmap_cache[hBitmap_cache.Length].pBitmapShow)
 	}
-	
+
 	while (hBitmap_cache.Length > 2) {
 		Gdip_DeleteGraphics(hBitmap_cache[1].G), Gdip_DisposeImage(hBitmap_cache[1].pBitmapShow), DeleteObject(hBitmap_cache[1].hBitmapShow)
 		hBitmap_cache.RemoveAt(1)
@@ -103,8 +113,8 @@ pic_ctrl_set_size() {
 	maxH := 0.7 * Screen_Height
 
 	percent := 1
-	if(h_max > maxH) {
-		percent := maxH/h_max
+	if (h_max > maxH) {
+		percent := maxH / h_max
 	}
 	ctrlH := h_max * percent
 	ctrlW := ctrlH * ratio
@@ -144,14 +154,14 @@ mygui_ctrl_show_pic(GuiCtrlObj, pBitmap)
 {
 	global hBitmap_cache
 	loop 2 {
-		if(hBitmap_cache[A_Index].pBitmap == pBitmap) {
+		if (hBitmap_cache[A_Index].pBitmap == pBitmap) {
 			SetImage(GuiCtrlObj.hwnd, hBitmap_cache[A_Index].hBitmapShow)
 			return
 		}
 	}
 	GuiCtrlObj.GetPos(, , , &ctrlH)
 	Gdip_GetImageDimensions(pBitmap, &W, &H)
-	percent := ctrlH/H
+	percent := ctrlH / H
 	picW := W * percent
 	picH := H * percent
 	pBitmapShow := Gdip_CreateBitmap(picW, picH)
@@ -164,8 +174,6 @@ mygui_ctrl_show_pic(GuiCtrlObj, pBitmap)
 	Gdip_DeleteGraphics(G), Gdip_DisposeImage(pBitmapShow), DeleteObject(hBitmapShow)
 }
 
-GuiClose:
-ExitApp
 mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 	global picture_array, pic
 	local valid := 0
@@ -181,7 +189,7 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 			}
 		}
 	}
-	if(valid) {
+	if (valid) {
 		pic_ctrl_set_size()
 		create_pic_bitmap_cache()
 		mygui_ctrl_show_pic(pic, picture_array[1])
@@ -193,7 +201,7 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 mygui_Close(thisGui) {
 	trueExit(0, 0)
 }
-trueExit(ExitReason, ExitCode){
+trueExit(ExitReason, ExitCode) {
 	ExitApp
 }
 
