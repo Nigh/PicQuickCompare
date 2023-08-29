@@ -98,6 +98,7 @@ create_pic_bitmap_cache() {
 pic_ctrl_set_size() {
 	global picture_array, pic, Screen_Width, Screen_Height, DPIScale
 	h_max := 0
+	w_max := 0
 	ratio := 0
 	W := 0
 	H := 0
@@ -107,6 +108,9 @@ pic_ctrl_set_size() {
 			if (H > h_max) {
 				h_max := H
 			}
+			if (W > w_max) {
+				w_max := W
+			}
 			if (W / H > ratio) {
 				ratio := W / H
 			}
@@ -115,12 +119,15 @@ pic_ctrl_set_size() {
 
 	minW := 400
 	minH := 400
-	maxW := 0.9 * Screen_Width / DPIScale
-	maxH := 0.8 * Screen_Height / DPIScale
+	maxW := 0.95 * Screen_Width / DPIScale
+	maxH := 0.85 * Screen_Height / DPIScale
 
 	percent := 1
 	if (h_max > maxH * DPIScale) {
-		percent := maxH / h_max
+		percent := Min(percent, maxH / h_max)
+	}
+	if (w_max > maxW * DPIScale) {
+		percent := Min(percent, maxW / w_max)
 	}
 	ctrlH := Round(h_max * percent) + 1
 	ctrlW := Round(ctrlH * ratio) + 1
