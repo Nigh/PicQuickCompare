@@ -115,7 +115,7 @@ pic_ctrl_set_size() {
 
 	minW := 400
 	minH := 400
-	maxW := 0.5 * Screen_Width / DPIScale
+	maxW := 0.9 * Screen_Width / DPIScale
 	maxH := 0.8 * Screen_Height / DPIScale
 
 	percent := 1
