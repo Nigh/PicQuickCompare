@@ -137,24 +137,25 @@ pic_ctrl_set_size() {
 	minW := 400
 	minH := 400
 	maxW := 0.95 * Screen_Width / DPIScale
-	maxH := 0.80 * Screen_Height / DPIScale
+	maxH := 0.85 * Screen_Height / DPIScale
 
 	percent := 1
-	if (h_max > maxH * DPIScale) {
+	if (h_max > maxH / DPIScale) {
 		percent := Min(percent, maxH / h_max)
 	}
-	if (w_max > maxW * DPIScale) {
+	if (w_max > maxW / DPIScale) {
 		percent := Min(percent, maxW / w_max)
 	}
 	ctrlH := Round(h_max * percent) + 1
 	ctrlW := Round(ctrlH * ratio) + 1
-	; MsgBox("hmax=" h_max "`nW=" W "`nctrlW=" ctrlW "`nH=" H "`nctrlH=" ctrlH "`nDPIScale=" DPIScale)
+	; MsgBox("h_max=" h_max "`nw_max=" w_max "`nmaxH=" maxH "`nmaxW=" maxW)
+	; MsgBox("W=" W "`nH=" H "`nctrlW=" ctrlW "`nctrlH=" ctrlH "`nDPIScale=" DPIScale "`npercent=" percent)
 	pic.Move(20, , ctrlW, ctrlH)
+	for _, inf in info {
+		inf.Move(Max(ctrlW - 80, 420))
+	}
 	pic.gui.Show("AutoSize")
 	pic.Redraw()
-	for _, inf in info {
-		inf.Move(ctrlW - 80)
-	}
 }
 
 mygui_ctrl_show_pic(GuiCtrlObj, image)
