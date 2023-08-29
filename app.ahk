@@ -1,4 +1,4 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 SetWorkingDir(A_ScriptDir)
 #SingleInstance force
 #include meta.ahk
@@ -131,7 +131,7 @@ pic_ctrl_set_size() {
 	}
 	ctrlH := Round(h_max * percent) + 1
 	ctrlW := Round(ctrlH * ratio) + 1
-	MsgBox("hmax=" h_max "`nW=" W "`nctrlW=" ctrlW "`nH=" H "`nctrlH=" ctrlH "`nDPIScale=" DPIScale)
+	; MsgBox("hmax=" h_max "`nW=" W "`nctrlW=" ctrlW "`nH=" H "`nctrlH=" ctrlH "`nDPIScale=" DPIScale)
 	pic.Move(20, , ctrlW, ctrlH)
 	pic.gui.Show("AutoSize")
 	pic.Redraw()
