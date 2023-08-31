@@ -41,7 +41,7 @@ info := Array()
 info.Push(mygui.Add("Text", "x420 y12", "v" . version))
 info.Push(mygui.Add("Link", "xp y+0", 'bilibili: <a href="https://space.bilibili.com/895523">下限Nico</a>'))
 info.Push(mygui.Add("Link", "xp y+0", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
-swapbtn := mygui.Add("Button", "xs y+0 h25", 'SWAP')
+swapbtn := mygui.Add("Button", "xs y+0 h25", 'SWAP(s)')
 swapbtn.OnEvent("Click", swap)
 mygui.Add("Text", "x+10 yp+3 hp", 'Current:')
 txt_indicator := mygui.Add("Text", "x+10 yp hp w300", 'NULL')
@@ -62,11 +62,14 @@ if (A_Args.Length > 0) {
 	}
 }
 HotIfWinActive "ahk_id" mygui.Hwnd
+Hotkey "^w", myGui_Close
 Hotkey "Esc", myGui_Close
+Hotkey "Space", pic_on_click
+Hotkey "s", swap
 HotIf
 Return
 
-swap(GuiCtrlObj, Info) {
+swap(GuiCtrlObj, Info*) {
 	global picture_array
 	if (picture_array[2].pBitmap > 0) {
 		tmp := picture_array[2]
@@ -76,11 +79,23 @@ swap(GuiCtrlObj, Info) {
 	}
 }
 
-pic_on_click(thisGui, GuiCtrlObj) {
+on_space(a) {
 	global picture_array, pic
 	if (picture_array[2].pBitmap > 0) {
 		mygui_ctrl_show_pic(pic, picture_array[2])
-		KeyWait "LButton"
+		KeyWait "Space"
+		mygui_ctrl_show_pic(pic, picture_array[1])
+	}
+}
+pic_on_click(thisGui, GuiCtrlObj*) {
+	global picture_array, pic
+	if (picture_array[2].pBitmap > 0) {
+		mygui_ctrl_show_pic(pic, picture_array[2])
+		if (thisGui == "Space") {
+			KeyWait "Space"
+		} else {
+			KeyWait "LButton"
+		}
 		mygui_ctrl_show_pic(pic, picture_array[1])
 	}
 }
