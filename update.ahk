@@ -78,7 +78,7 @@ tryNextUpdate()
 			Return
 		}
 	}
-	TrayTip "Status=" req.status, "update failed", 0x3
+	TrayTip "Update Timeout", "update failed", 0x3
 }
 ; with MSXML2.ServerXMLHTTP method, there would be multiple callback called
 
