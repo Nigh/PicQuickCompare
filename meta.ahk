@@ -1,7 +1,7 @@
 
 FileEncoding("UTF-8")
 appName:="auto upgrader"
-version:="0.0.3"
+version:="0.1.0"
 versionFilename:="version.txt"
 ahkFilename:="app.ahk"
 binaryFilename:="PicQuickCompare.exe"
@@ -9,8 +9,8 @@ downloadFilename:="PicQuickCompare.zip"
 downloadUrl:="/Nigh/PicQuickCompare/releases/latest/download/"
 update_log:="
 (
-1. 优化DPI缩放后的尺寸计算
-2. 修复窗口尺寸约束计算错误
-3. 添加图片名称指示器
-4. 添加交换按钮，交换对比的两张图
+1. 添加快捷键 空格 临时切换图片
+2. 添加快捷键 s 交换图片顺序
+3. 添加快捷键 ctrl+w 关闭窗口
+4. 窗口尺寸改变时自动居中
 )"
