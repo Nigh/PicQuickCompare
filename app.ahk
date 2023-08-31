@@ -169,7 +169,7 @@ pic_ctrl_set_size() {
 	for _, inf in info {
 		inf.Move(Max(ctrlW - 80, 420))
 	}
-	pic.gui.Show("AutoSize")
+	pic.gui.Show("AutoSize Center")
 	pic.Redraw()
 }
 
