@@ -8,7 +8,7 @@
 </div>
 简易的快速图片对比工具。
 
-![](preview.mp4)
+https://github.com/Nigh/PicQuickCompare/assets/1407471/9bc7cdb1-932e-4e05-bb01-6feeafd778af
 
 ## 用法
 
