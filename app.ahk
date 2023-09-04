@@ -6,6 +6,7 @@ SetWorkingDir(A_ScriptDir)
 ;@Ahk2Exe-SetVersion %version%
 ;@Ahk2Exe-SetMainIcon icon.ico
 ;@Ahk2Exe-ExeName %appName%
+;@Ahk2Exe-AddResource *10 %A_ScriptDir%\app_title.png
 
 #include prod.ahk
 
@@ -31,24 +32,35 @@ hBitmap_cache := []
 #include Gdip_All.ahk
 pGDI := Gdip_Startup()
 
-mygui := Gui("-AlwaysOnTop -Owner")
+mygui := Gui("-AlwaysOnTop -ToolWindow -SysMenu -Owner")
+mygui.MarginX := 10
+mygui.MarginY := 10
+mygui.Title := appName
 myGui.OnEvent("Close", myGui_Close)
 myGui.OnEvent("DropFiles", mygui_DropFiles)
-mygui.SetFont("s32 Q5", "Meiryo")
-mygui.Add("Text", "x20 y10 Section", "PicQuickCompare")
-mygui.SetFont("s10 Q5", "Meiryo")
-info := Array()
-info.Push(mygui.Add("Text", "x420 y12", "v" . version))
-info.Push(mygui.Add("Link", "xp y+0", 'bilibili: <a href="https://space.bilibili.com/895523">下限Nico</a>'))
-info.Push(mygui.Add("Link", "xp y+0", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
-swapbtn := mygui.Add("Button", "xs y+0 h25", 'SWAP(s)')
+if A_IsCompiled {
+	mygui.Add("Picture", "x10 y10 Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
+} else {
+	mygui.Add("Picture", "x10 y10 Section", "app_title.png")
+}
+
+mygui.SetFont("s10 Q5 bold", "Comic Sans MS")
+swapbtn := mygui.Add("Button", "xs y+5 h25", 'SWAP(s)')
 swapbtn.OnEvent("Click", swap)
 mygui.Add("Text", "x+10 yp+3 hp", 'Current:')
-txt_indicator := mygui.Add("Text", "x+10 yp hp w300", 'NULL')
+txt_indicator := mygui.Add("Text", "x+10 yp hp w360", 'NULL')
 txt_indicator.SetFont("cTeal bold")
-pic := mygui.Add("Picture", "x20 y+0 w500 h400 0xE 0x200 0x800000 -0x40")
+
+pic := mygui.Add("Picture", "xs y+0 w500 h400 0xE 0x200 0x800000 -0x40")
 pic.OnEvent("Click", pic_on_click)
 pic.OnEvent("DoubleClick", pic_on_click)
+
+mygui.SetFont("s8 Q5 Norm", "Comic Sans MS")
+info := Array()
+info.Push(mygui.Add("Text", "x420 y12 h0", "v" . version))
+info.Push(mygui.Add("Link", "xp y+0 hp", 'bilibili: <a href="https://space.bilibili.com/895523">TecNico</a>'))
+info.Push(mygui.Add("Link", "xp y+0 hp", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
+
 mygui.Show("AutoSize")
 
 if (A_Args.Length > 0) {
@@ -165,9 +177,9 @@ pic_ctrl_set_size() {
 	ctrlW := Round(ctrlH * ratio) + 1
 	; MsgBox("h_max=" h_max "`nw_max=" w_max "`nmaxH=" maxH "`nmaxW=" maxW)
 	; MsgBox("W=" W "`nH=" H "`nctrlW=" ctrlW "`nctrlH=" ctrlH "`nDPIScale=" DPIScale "`npercent=" percent)
-	pic.Move(20, , ctrlW, ctrlH)
+	pic.Move(10, , ctrlW, ctrlH)
 	for _, inf in info {
-		inf.Move(Max(ctrlW - 80, 420))
+		inf.Move(Max(ctrlW - 90, 410))
 	}
 	pic.gui.Show("AutoSize Center")
 	pic.Redraw()
@@ -230,6 +242,23 @@ mygui_Close(thisGui) {
 }
 trueExit(ExitReason, ExitCode) {
 	ExitApp
+}
+
+HBitmapFromResource(resName) {
+	hMod := DllCall("GetModuleHandle", "Ptr", 0, "Ptr")
+	hRes := DllCall("FindResource", "Ptr", hMod, "Str", resName, "UInt", RT_RCDATA := 10, "Ptr")
+	resSize := DllCall("SizeofResource", "Ptr", hMod, "Ptr", hRes)
+	hResData := DllCall("LoadResource", "Ptr", hMod, "Ptr", hRes, "Ptr")
+	pBuff := DllCall("LockResource", "Ptr", hResData, "Ptr")
+	pStream := DllCall("Shlwapi\SHCreateMemStream", "Ptr", pBuff, "UInt", resSize, "Ptr")
+
+	pBitmap := 0
+	DllCall("Gdiplus.dll\GdipCreateBitmapFromStream", "Ptr", pStream, "Ptr*", &pBitmap)
+	; pBitmap := pGDI.CreateBitmapFromStream(pStream)
+	hBitmap := Gdip_CreateHBITMAPFromBitmap(pBitmap)
+	Gdip_DisposeImage(pBitmap)
+	ObjRelease(pStream)
+	Return hBitmap
 }
 
 ; ===============================================================
