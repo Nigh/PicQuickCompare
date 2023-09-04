@@ -8,7 +8,10 @@
 </div>
 简易的快速图片对比工具。
 
+<div align="center">
+	
 https://github.com/Nigh/PicQuickCompare/assets/1407471/9bc7cdb1-932e-4e05-bb01-6feeafd778af
+</div>
 
 ## 用法
 
