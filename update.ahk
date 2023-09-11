@@ -102,7 +102,7 @@ updateReady(){
 		if((verNew[1]>verNow[1])
 		|| (verNew[1]==verNow[1] && ((verNew[2]>verNow[2])
 			|| (verNew[2]==verNow[2] && verNew[3]>verNow[3])))){
-			result:=MsgBox("Found new version " . req.responseText . ", download?", "Download", 0x2024)
+			result:=MsgBox(appName " Found new version " . req.responseText . ", download?", "Download", 0x2024)
 			if result = "Yes"
 			{
 				try {
