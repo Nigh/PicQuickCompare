@@ -1,4 +1,4 @@
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 SetWorkingDir(A_ScriptDir)
 #SingleInstance force
 #include meta.ahk
@@ -66,6 +66,8 @@ swapbtn.OnEvent("Click", swap)
 
 autoCenterSwitch := mygui.Add("Checkbox", "x+10 yp hp " autoCenter_default_check, 'Auto Center')
 autoCenterSwitch.OnEvent("Click", autoPosSwitch_cb)
+backgroundSwitch := mygui.Add("Checkbox", "x+10 yp hp", 'Runs in background')
+backgroundSwitch.OnEvent("Click", backgroundSwitch_cb)
 
 mygui.SetFont("s10 Q5 norm", "Comic Sans MS")
 mygui.Add("Text", "xs y+0 h12", 'Current:')
