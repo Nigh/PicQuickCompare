@@ -27,7 +27,7 @@ MonitorGet(1, &Left, &Top, &Right, &Bottom)
 DPIScale := A_ScreenDPI / 96
 Screen_Height := Bottom - Top
 Screen_Width := Right - Left
-picture_array := [{ name: '', pBitmap: -1 }, { name: '', pBitmap: -1 }]
+picture_array := [{ name: '', pBitmap: -1, exif: '' }, { name: '', pBitmap: -1, exif: '' }]
 hBitmap_cache := []
 #include Gdip_All.ahk
 pGDI := Gdip_Startup()
@@ -45,13 +45,18 @@ if A_IsCompiled {
 }
 
 mygui.SetFont("s10 Q5 bold", "Comic Sans MS")
-swapbtn := mygui.Add("Button", "xs y+5 h25", 'SWAP(s)')
+swapbtn := mygui.Add("Button", "xs y+5 h50", 'SWAP(s)')
 swapbtn.OnEvent("Click", swap)
-mygui.Add("Text", "x+10 yp+3 hp", 'Current:')
+
+mygui.Add("Text", "Section x+10 yp+3 h25", 'Current:')
 txt_indicator := mygui.Add("Text", "x+10 yp hp w360", 'NULL')
 txt_indicator.SetFont("cTeal bold")
 
-pic := mygui.Add("Picture", "xs y+0 w500 h400 0xE 0x200 0x800000 -0x40")
+mygui.Add("Text", "xs y+3 h25", 'EXIF:')
+txt_exif := mygui.Add("Text", "x+10 yp hp w360", 'NULL')
+txt_exif.SetFont("cNavy bold")
+
+pic := mygui.Add("Picture", "x10 y+0 w500 h400 0xE 0x200 0x800000 -0x40")
 pic.OnEvent("Click", pic_on_click)
 pic.OnEvent("DoubleClick", pic_on_click)
 
@@ -80,6 +85,8 @@ Hotkey "Space", pic_on_click
 Hotkey "s", swap
 HotIf
 Return
+
+#include "Filexpro.ahk"
 
 swap(GuiCtrlObj, Info*) {
 	global picture_array
@@ -192,6 +199,7 @@ mygui_ctrl_show_pic(GuiCtrlObj, image)
 		if (hBitmap_cache[A_Index].pBitmap == image.pBitmap) {
 			SetImage(GuiCtrlObj.hwnd, hBitmap_cache[A_Index].hBitmapShow)
 			txt_indicator.Text := image.name
+			txt_exif.Text := image.exif
 			return
 		}
 	}
@@ -223,7 +231,22 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 				valid += 1
 				Loop Files, fullpath, "F" {
 					picture_array[2] := picture_array[1]
-					picture_array[1] := { name: A_LoopFileName, pBitmap: bitmap }
+					exinfo := Filexpro(A_LoopFileFullPath, "", "Orientation", "ISO speed", "Focal length", "Exposure time", "xInfo")
+					list_exinfo := ""
+					for k, v in exinfo {
+						list_exinfo .= "[" k "]=" v "`n"
+					}
+					exif := exinfo["ISO speed"] " " exinfo["Focal length"] " " exinfo["Exposure time"]
+					if (InStr(exinfo["Orientation"], "90")) {
+						Gdip_ImageRotateFlip(bitmap, 3)
+					}
+					if (InStr(exinfo["Orientation"], "180")) {
+						Gdip_ImageRotateFlip(bitmap, 2)
+					}
+					if (InStr(exinfo["Orientation"], "270")) {
+						Gdip_ImageRotateFlip(bitmap, 1)
+					}
+					picture_array[1] := { name: A_LoopFileName, pBitmap: bitmap, exif: exif }
 				}
 			}
 		}
