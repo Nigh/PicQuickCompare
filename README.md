@@ -24,9 +24,3 @@ https://github.com/Nigh/PicQuickCompare/assets/1407471/9bc7cdb1-932e-4e05-bb01-6
 鼠标点击图片或者按 `空格键` 快速查看另一张。
 
 快捷键 `S` 交换查看两张图片。
-
-## Plan
-
-- ~~缩放功能~~（更改为PWA版本计划）
-- 宽度对齐与高度对齐切换
-- 改写成PWA应用，不仅跨平台还更好用
