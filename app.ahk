@@ -86,7 +86,7 @@ Hotkey "s", swap
 HotIf
 Return
 
-#include "Filexpro.ahk"
+#include Filexpro.ahk
 
 swap(GuiCtrlObj, Info*) {
 	global picture_array
