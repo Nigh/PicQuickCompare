@@ -1,4 +1,4 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 SetWorkingDir(A_ScriptDir)
 #SingleInstance force
 #include meta.ahk
@@ -27,9 +27,16 @@ MonitorGet(1, &Left, &Top, &Right, &Bottom)
 DPIScale := A_ScreenDPI / 96
 Screen_Height := Bottom - Top
 Screen_Width := Right - Left
-picture_array := [{ name: '', pBitmap: -1, exif: '' }, { name: '', pBitmap: -1, exif: '' }]
-hBitmap_cache := []
-
+picture_array := []
+loop 2
+	picture_array.Push({
+		name: '',
+		pBitmap: -1,
+		exif: '',
+		pBitmapShow: 0,
+		G: 0,
+		hBitmapShow: 0
+	})
 if (IniRead("setting.ini", "setup", "autocenter", "1") == "1") {
 	setting_autoCenter := "center"
 	autoCenter_default_check := "Checked1"
@@ -69,6 +76,7 @@ mygui.Add("Text", "xs y+0 h12", 'EXIF:')
 txt_exif := mygui.Add("Text", "x+10 yp hp w360", 'NULL')
 txt_exif.SetFont("cNavy bold")
 
+picCurrentShow := 1
 pic := mygui.Add("Picture", "x10 y+0 w500 h400 0xE 0x200 0x800000 -0x40")
 pic.OnEvent("Click", pic_on_click)
 pic.OnEvent("DoubleClick", pic_on_click)
@@ -116,62 +124,58 @@ backgroundSwitch_cb(GuiCtrlObj, Info*) {
 	GuiCtrlObj.Opt("+Disabled")
 	SetTimer(() => GuiCtrlObj.Opt("-Disabled"), -600)
 }
+isSwapable() {
+	global
+	return picture_array[picCurrentShow ^ 0x3].pBitmap > 0
+}
 swap(GuiCtrlObj, Info*) {
-	global picture_array
-	if (picture_array[2].pBitmap > 0) {
-		tmp := picture_array[2]
-		picture_array[2] := picture_array[1]
-		picture_array[1] := tmp
-		mygui_ctrl_show_pic(pic, picture_array[1])
+	global picture_array, picCurrentShow
+	if (isSwapable()) {
+		picCurrentShow := picCurrentShow ^ 0x3
+		mygui_ctrl_show_pic(picture_array[picCurrentShow])
 	}
 }
 
 on_space(a) {
-	global picture_array, pic
-	if (picture_array[2].pBitmap > 0) {
-		mygui_ctrl_show_pic(pic, picture_array[2])
+	if (isSwapable()) {
+		swap("")
 		KeyWait "Space"
-		mygui_ctrl_show_pic(pic, picture_array[1])
+		swap("")
 	}
 }
 pic_on_click(thisGui, GuiCtrlObj*) {
-	global picture_array, pic
-	if (picture_array[2].pBitmap > 0) {
-		mygui_ctrl_show_pic(pic, picture_array[2])
+	if (isSwapable()) {
+		swap("")
 		if (thisGui == "Space") {
 			KeyWait "Space"
 		} else {
 			KeyWait "LButton"
 		}
-		mygui_ctrl_show_pic(pic, picture_array[1])
+		swap("")
 	}
 }
 
-create_pic_bitmap_cache() {
+create_pic_bitmap_cache(index) {
 	global picture_array, pic, DPIScale
+
+	if (picture_array[index].pBitmap < 0) {
+		return
+	}
 	pic.GetPos(, , , &ctrlH)
-	loop 2 {
-		if (picture_array[A_Index].pBitmap < 0) {
-			break
-		}
-		hBitmap_cache.Push({ pBitmap: 0, pBitmapShow: 0, G: 0, hBitmapShow: 0 })
-		hBitmap_cache[hBitmap_cache.Length].pBitmap := picture_array[A_Index].pBitmap
-		Gdip_GetImageDimensions(hBitmap_cache[hBitmap_cache.Length].pBitmap, &W, &H)
-		percent := ctrlH / H * DPIScale
-		picW := W * percent
-		picH := H * percent
-		hBitmap_cache[hBitmap_cache.Length].pBitmapShow := Gdip_CreateBitmap(picW, picH)
-		hBitmap_cache[hBitmap_cache.Length].G := Gdip_GraphicsFromImage(hBitmap_cache[hBitmap_cache.Length].pBitmapShow)
-		Gdip_SetSmoothingMode(hBitmap_cache[hBitmap_cache.Length].G, 4)
-		Gdip_SetInterpolationMode(hBitmap_cache[hBitmap_cache.Length].G, 7)
-		Gdip_DrawImage(hBitmap_cache[hBitmap_cache.Length].G, hBitmap_cache[hBitmap_cache.Length].pBitmap, 0, 0, picW, picH)
-		hBitmap_cache[hBitmap_cache.Length].hBitmapShow := Gdip_CreateHBITMAPFromBitmap(hBitmap_cache[hBitmap_cache.Length].pBitmapShow)
+	if (picture_array[index].G) {
+		Gdip_DeleteGraphics(picture_array[index].G), Gdip_DisposeImage(picture_array[index].pBitmapShow), DeleteObject(picture_array[index].hBitmapShow)
 	}
 
-	while (hBitmap_cache.Length > 2) {
-		Gdip_DeleteGraphics(hBitmap_cache[1].G), Gdip_DisposeImage(hBitmap_cache[1].pBitmapShow), DeleteObject(hBitmap_cache[1].hBitmapShow)
-		hBitmap_cache.RemoveAt(1)
-	}
+	Gdip_GetImageDimensions(picture_array[index].pBitmap, &W, &H)
+	percent := ctrlH / H * DPIScale
+	picW := W * percent
+	picH := H * percent
+	picture_array[index].pBitmapShow := Gdip_CreateBitmap(picW, picH)
+	picture_array[index].G := Gdip_GraphicsFromImage(picture_array[index].pBitmapShow)
+	Gdip_SetSmoothingMode(picture_array[index].G, 4)
+	Gdip_SetInterpolationMode(picture_array[index].G, 7)
+	Gdip_DrawImage(picture_array[index].G, picture_array[index].pBitmap, 0, 0, picW, picH)
+	picture_array[index].hBitmapShow := Gdip_CreateHBITMAPFromBitmap(picture_array[index].pBitmapShow)
 }
 
 pic_ctrl_set_size() {
@@ -220,34 +224,16 @@ pic_ctrl_set_size() {
 	pic.Redraw()
 }
 
-mygui_ctrl_show_pic(GuiCtrlObj, image)
+mygui_ctrl_show_pic(picture)
 {
-	global hBitmap_cache, txt_indicator
-	loop 2 {
-		if (hBitmap_cache[A_Index].pBitmap == image.pBitmap) {
-			SetImage(GuiCtrlObj.hwnd, hBitmap_cache[A_Index].hBitmapShow)
-			txt_indicator.Text := image.name
-			txt_exif.Text := image.exif
-			return
-		}
-	}
-	GuiCtrlObj.GetPos(, , , &ctrlH)
-	Gdip_GetImageDimensions(image.pBitmap, &W, &H)
-	percent := ctrlH / H
-	picW := W * percent
-	picH := H * percent
-	pBitmapShow := Gdip_CreateBitmap(picW, picH)
-	G := Gdip_GraphicsFromImage(pBitmapShow)
-	Gdip_SetSmoothingMode(G, 4)
-	Gdip_SetInterpolationMode(G, 7)
-	Gdip_DrawImage(G, image.pBitmap, 0, 0, picW, picH)
-	hBitmapShow := Gdip_CreateHBITMAPFromBitmap(pBitmapShow)
-	SetImage(GuiCtrlObj.hwnd, hBitmapShow)
-	Gdip_DeleteGraphics(G), Gdip_DisposeImage(pBitmapShow), DeleteObject(hBitmapShow)
+	global txt_indicator, pic, mygui
+	txt_indicator.Text := picture.name
+	txt_exif.Text := picture.exif
+	SetImage(pic.hwnd, picture.hBitmapShow)
 }
 
 mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
-	global picture_array, pic
+	global picture_array, pic, picCurrentShow
 	local valid := 0
 	local bitmap
 	GuiObj.Opt("+OwnDialogs")
@@ -258,7 +244,7 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 			if (bitmap > 0) {
 				valid += 1
 				Loop Files, fullpath, "F" {
-					picture_array[2] := picture_array[1]
+					picCurrentShow := picCurrentShow ^ 0x3
 					exinfo := Filexpro(A_LoopFileFullPath, "", "System.Photo.Orientation", "System.Photo.FNumber", "System.Photo.ISOSpeed", "System.Photo.FocalLength", "System.Photo.ExposureTime", "System.Photo.ExposureTimeNumerator", "System.Photo.ExposureTimeDenominator", "xInfo")
 					if (StrLen(exinfo["System.Photo.FocalLength"]) > 0) {
 						ex_focal := exinfo["System.Photo.FocalLength"] "mm"
@@ -281,15 +267,18 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 					if (exinfo["System.Photo.Orientation"] == "6") {
 						Gdip_ImageRotateFlip(bitmap, 1)
 					}
-					picture_array[1] := { name: A_LoopFileName, pBitmap: bitmap, exif: exif }
+					picture_array[picCurrentShow].name := A_LoopFileName
+					picture_array[picCurrentShow].pBitmap := bitmap
+					picture_array[picCurrentShow].exif := exif
 				}
 			}
 		}
 	}
 	if (valid) {
 		pic_ctrl_set_size()
-		create_pic_bitmap_cache()
-		mygui_ctrl_show_pic(pic, picture_array[1])
+		loop 2
+			create_pic_bitmap_cache(A_Index)
+		mygui_ctrl_show_pic(picture_array[picCurrentShow])
 	}
 	if (!valid) {
 		MsgBox "Invalid Files"
