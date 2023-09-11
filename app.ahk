@@ -1,4 +1,4 @@
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 SetWorkingDir(A_ScriptDir)
 #SingleInstance force
 #include meta.ahk
@@ -259,19 +259,26 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 				valid += 1
 				Loop Files, fullpath, "F" {
 					picture_array[2] := picture_array[1]
-					exinfo := Filexpro(A_LoopFileFullPath, "", "Orientation", "ISO speed", "Focal length", "Exposure time", "xInfo")
+					exinfo := Filexpro(A_LoopFileFullPath, "", "System.Photo.Orientation", "System.Photo.FNumber", "System.Photo.ISOSpeed", "System.Photo.FocalLength", "System.Photo.ExposureTime", "System.Photo.ExposureTimeNumerator", "System.Photo.ExposureTimeDenominator", "xInfo")
 					list_exinfo := ""
 					for k, v in exinfo {
 						list_exinfo .= "[" k "]=" v "`n"
 					}
-					exif := exinfo["ISO speed"] " " exinfo["Focal length"] " " exinfo["Exposure time"]
-					if (InStr(exinfo["Orientation"], "90")) {
+					ex_focal := exinfo["System.Photo.FocalLength"] "mm"
+					ex_apture := "F" exinfo["System.Photo.FNumber"]
+					ex_ISO := "ISO" exinfo["System.Photo.ISOSpeed"]
+					ex_exposure := exinfo["System.Photo.ExposureTime"] + 0
+					if (ex_exposure < 1) {
+						ex_exposure := exinfo["System.Photo.ExposureTimeNumerator"] "/" exinfo["System.Photo.ExposureTimeDenominator"] "s"
+					}
+					exif := ex_focal "  " ex_apture "  " ex_exposure "  " ex_ISO
+					if (exinfo["System.Photo.Orientation"] == "8") {
 						Gdip_ImageRotateFlip(bitmap, 3)
 					}
-					if (InStr(exinfo["Orientation"], "180")) {
+					if (exinfo["System.Photo.Orientation"] == "3") {
 						Gdip_ImageRotateFlip(bitmap, 2)
 					}
-					if (InStr(exinfo["Orientation"], "270")) {
+					if (exinfo["System.Photo.Orientation"] == "6") {
 						Gdip_ImageRotateFlip(bitmap, 1)
 					}
 					picture_array[1] := { name: A_LoopFileName, pBitmap: bitmap, exif: exif }
