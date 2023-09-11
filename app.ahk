@@ -29,6 +29,15 @@ Screen_Height := Bottom - Top
 Screen_Width := Right - Left
 picture_array := [{ name: '', pBitmap: -1, exif: '' }, { name: '', pBitmap: -1, exif: '' }]
 hBitmap_cache := []
+
+if (IniRead("setting.ini", "setup", "autocenter", "1") == "1") {
+	setting_autoCenter := "center"
+	autoCenter_default_check := "Checked1"
+} else {
+	setting_autoCenter := ""
+	autoCenter_default_check := "Checked0"
+}
+
 #include Gdip_All.ahk
 pGDI := Gdip_Startup()
 
@@ -44,15 +53,19 @@ if A_IsCompiled {
 	mygui.Add("Picture", "x10 y10 Section", "app_title.png")
 }
 
-mygui.SetFont("s10 Q5 bold", "Comic Sans MS")
-swapbtn := mygui.Add("Button", "xs y+5 h50", 'SWAP(s)')
+mygui.SetFont("s8 Q5 bold", "Comic Sans MS")
+swapbtn := mygui.Add("Button", "xs y+5 h22 w90", 'SWAP(s)')
 swapbtn.OnEvent("Click", swap)
 
-mygui.Add("Text", "Section x+10 yp+3 h25", 'Current:')
+autoCenterSwitch := mygui.Add("Checkbox", "x+10 yp hp " autoCenter_default_check, 'Auto Center')
+autoCenterSwitch.OnEvent("Click", autoPosSwitch_cb)
+
+mygui.SetFont("s10 Q5 norm", "Comic Sans MS")
+mygui.Add("Text", "xs y+0 h12", 'Current:')
 txt_indicator := mygui.Add("Text", "x+10 yp hp w360", 'NULL')
 txt_indicator.SetFont("cTeal bold")
 
-mygui.Add("Text", "xs y+3 h25", 'EXIF:')
+mygui.Add("Text", "xs y+0 h12", 'EXIF:')
 txt_exif := mygui.Add("Text", "x+10 yp hp w360", 'NULL')
 txt_exif.SetFont("cNavy bold")
 
@@ -87,7 +100,22 @@ HotIf
 Return
 
 #include Filexpro.ahk
-
+autoPosSwitch_cb(GuiCtrlObj, Info*) {
+	global setting_autoCenter
+	if (GuiCtrlObj.Value > 0) {
+		setting_autoCenter := "center"
+		IniWrite("1", "setting.ini", "setup", "autocenter")
+	} else {
+		setting_autoCenter := ""
+		IniWrite("0", "setting.ini", "setup", "autocenter")
+	}
+	GuiCtrlObj.Opt("+Disabled")
+	SetTimer(() => GuiCtrlObj.Opt("-Disabled"), -600)
+}
+backgroundSwitch_cb(GuiCtrlObj, Info*) {
+	GuiCtrlObj.Opt("+Disabled")
+	SetTimer(() => GuiCtrlObj.Opt("-Disabled"), -600)
+}
 swap(GuiCtrlObj, Info*) {
 	global picture_array
 	if (picture_array[2].pBitmap > 0) {
@@ -188,7 +216,7 @@ pic_ctrl_set_size() {
 	for _, inf in info {
 		inf.Move(Max(ctrlW - 90, 410))
 	}
-	pic.gui.Show("AutoSize Center")
+	pic.gui.Show("AutoSize " setting_autoCenter)
 	pic.Redraw()
 }
 
@@ -231,19 +259,26 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 				valid += 1
 				Loop Files, fullpath, "F" {
 					picture_array[2] := picture_array[1]
-					exinfo := Filexpro(A_LoopFileFullPath, "", "Orientation", "ISO speed", "Focal length", "Exposure time", "xInfo")
+					exinfo := Filexpro(A_LoopFileFullPath, "", "System.Photo.Orientation", "System.Photo.FNumber", "System.Photo.ISOSpeed", "System.Photo.FocalLength", "System.Photo.ExposureTime", "System.Photo.ExposureTimeNumerator", "System.Photo.ExposureTimeDenominator", "xInfo")
 					list_exinfo := ""
 					for k, v in exinfo {
 						list_exinfo .= "[" k "]=" v "`n"
 					}
-					exif := exinfo["ISO speed"] " " exinfo["Focal length"] " " exinfo["Exposure time"]
-					if (InStr(exinfo["Orientation"], "90")) {
+					ex_focal := exinfo["System.Photo.FocalLength"] "mm"
+					ex_apture := "F" exinfo["System.Photo.FNumber"]
+					ex_ISO := "ISO" exinfo["System.Photo.ISOSpeed"]
+					ex_exposure := exinfo["System.Photo.ExposureTime"] + 0
+					if (ex_exposure < 1) {
+						ex_exposure := exinfo["System.Photo.ExposureTimeNumerator"] "/" exinfo["System.Photo.ExposureTimeDenominator"] "s"
+					}
+					exif := ex_focal "  " ex_apture "  " ex_exposure "  " ex_ISO
+					if (exinfo["System.Photo.Orientation"] == "8") {
 						Gdip_ImageRotateFlip(bitmap, 3)
 					}
-					if (InStr(exinfo["Orientation"], "180")) {
+					if (exinfo["System.Photo.Orientation"] == "3") {
 						Gdip_ImageRotateFlip(bitmap, 2)
 					}
-					if (InStr(exinfo["Orientation"], "270")) {
+					if (exinfo["System.Photo.Orientation"] == "6") {
 						Gdip_ImageRotateFlip(bitmap, 1)
 					}
 					picture_array[1] := { name: A_LoopFileName, pBitmap: bitmap, exif: exif }
