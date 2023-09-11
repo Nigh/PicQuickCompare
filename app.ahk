@@ -260,18 +260,18 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 				Loop Files, fullpath, "F" {
 					picture_array[2] := picture_array[1]
 					exinfo := Filexpro(A_LoopFileFullPath, "", "System.Photo.Orientation", "System.Photo.FNumber", "System.Photo.ISOSpeed", "System.Photo.FocalLength", "System.Photo.ExposureTime", "System.Photo.ExposureTimeNumerator", "System.Photo.ExposureTimeDenominator", "xInfo")
-					list_exinfo := ""
-					for k, v in exinfo {
-						list_exinfo .= "[" k "]=" v "`n"
+					if (StrLen(exinfo["System.Photo.FocalLength"]) > 0) {
+						ex_focal := exinfo["System.Photo.FocalLength"] "mm"
+						ex_apture := "F" exinfo["System.Photo.FNumber"]
+						ex_ISO := "ISO" exinfo["System.Photo.ISOSpeed"]
+						ex_exposure := ("0" exinfo["System.Photo.ExposureTime"]) + 0
+						if (ex_exposure < 1) {
+							ex_exposure := exinfo["System.Photo.ExposureTimeNumerator"] "/" exinfo["System.Photo.ExposureTimeDenominator"] "s"
+						}
+						exif := ex_focal "  " ex_apture "  " ex_exposure "  " ex_ISO
+					} else {
+						exif := "NULL"
 					}
-					ex_focal := exinfo["System.Photo.FocalLength"] "mm"
-					ex_apture := "F" exinfo["System.Photo.FNumber"]
-					ex_ISO := "ISO" exinfo["System.Photo.ISOSpeed"]
-					ex_exposure := exinfo["System.Photo.ExposureTime"] + 0
-					if (ex_exposure < 1) {
-						ex_exposure := exinfo["System.Photo.ExposureTimeNumerator"] "/" exinfo["System.Photo.ExposureTimeDenominator"] "s"
-					}
-					exif := ex_focal "  " ex_apture "  " ex_exposure "  " ex_ISO
 					if (exinfo["System.Photo.Orientation"] == "8") {
 						Gdip_ImageRotateFlip(bitmap, 3)
 					}
