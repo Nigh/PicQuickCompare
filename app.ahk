@@ -37,12 +37,21 @@ loop 2
 		G: 0,
 		hBitmapShow: 0
 	})
+
 if (IniRead("setting.ini", "setup", "autocenter", "1") == "1") {
 	setting_autoCenter := "center"
 	autoCenter_default_check := "Checked1"
 } else {
 	setting_autoCenter := ""
 	autoCenter_default_check := "Checked0"
+}
+
+if (IniRead("setting.ini", "setup", "runbackgroud", "0") == "1") {
+	setting_runbackgroud := 1
+	runbackgroud_default_check := "Checked1"
+} else {
+	setting_runbackgroud := 0
+	runbackgroud_default_check := "Checked0"
 }
 
 #include Gdip_All.ahk
@@ -66,7 +75,7 @@ swapbtn.OnEvent("Click", swap)
 
 autoCenterSwitch := mygui.Add("Checkbox", "x+10 yp hp " autoCenter_default_check, 'Auto Center')
 autoCenterSwitch.OnEvent("Click", autoPosSwitch_cb)
-backgroundSwitch := mygui.Add("Checkbox", "x+10 yp hp", 'Runs in background')
+backgroundSwitch := mygui.Add("Checkbox", "x+10 yp hp " runbackgroud_default_check, 'Runs in background')
 backgroundSwitch.OnEvent("Click", backgroundSwitch_cb)
 
 mygui.SetFont("s10 Q5 norm", "Comic Sans MS")
@@ -89,7 +98,11 @@ info.Push(mygui.Add("Text", "x420 y12 h0", "v" . version))
 info.Push(mygui.Add("Link", "xp y+0 hp", 'bilibili: <a href="https://space.bilibili.com/895523">TecNico</a>'))
 info.Push(mygui.Add("Link", "xp y+0 hp", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
 
-mygui.Show("AutoSize")
+if (setting_runbackgroud) {
+	mygui.Show("AutoSize Hide")
+} else {
+	mygui.Show("AutoSize")
+}
 
 if (A_Args.Length > 0) {
 	para_pic := Array()
@@ -102,12 +115,35 @@ if (A_Args.Length > 0) {
 	}
 }
 HotIfWinActive "ahk_id" mygui.Hwnd
-Hotkey "^w", myGui_Close
-Hotkey "Esc", myGui_Close
+if (setting_runbackgroud) {
+	Hotkey "^w", myGui_Hide
+	Hotkey "Esc", myGui_Hide
+} else {
+	Hotkey "^w", myGui_Close
+	Hotkey "Esc", myGui_Close
+}
 Hotkey "Space", pic_on_click
 Hotkey "s", swap
 HotIf
+if (setting_runbackgroud) {
+	Hotkey "^q", copyCompare
+	TrayTip("Runs in Background.`nSelect pictures and press Ctrl+Q to compare.", "PicQuickCompare", 1)
+}
 Return
+
+copyCompare(GuiCtrlObj, info*) {
+	global mygui
+	A_Clipboard := ""
+	Send("^c")
+	if (!ClipWait(1)) {
+		return
+	}
+	FileArray := []
+	loop parse A_Clipboard, "`n", "`r" {
+		FileArray.Push(A_LoopField)
+	}
+	mygui_DropFiles(mygui, 0, FileArray, 0, 0)
+}
 
 #include Filexpro.ahk
 autoPosSwitch_cb(GuiCtrlObj, Info*) {
@@ -123,8 +159,15 @@ autoPosSwitch_cb(GuiCtrlObj, Info*) {
 	SetTimer(() => GuiCtrlObj.Opt("-Disabled"), -600)
 }
 backgroundSwitch_cb(GuiCtrlObj, Info*) {
-	GuiCtrlObj.Opt("+Disabled")
-	SetTimer(() => GuiCtrlObj.Opt("-Disabled"), -600)
+	global setting_autoCenter
+	if (GuiCtrlObj.Value > 0) {
+		IniWrite("1", "setting.ini", "setup", "runbackgroud")
+	} else {
+		IniWrite("0", "setting.ini", "setup", "runbackgroud")
+	}
+	Reload
+	; GuiCtrlObj.Opt("+Disabled")
+	; SetTimer(() => GuiCtrlObj.Opt("-Disabled"), -600)
 }
 isSwapable() {
 	global
@@ -223,6 +266,10 @@ pic_ctrl_set_size() {
 		inf.Move(Max(ctrlW - 90, 410))
 	}
 	pic.gui.Show("AutoSize " setting_autoCenter)
+	pic.gui.GetPos(&X, &Y, &Width, &Height)
+	if (Y + Height >= 0.95 * Screen_Height / DPIScale) {
+		pic.gui.Show("yCenter")
+	}
 	pic.Redraw()
 }
 
@@ -285,6 +332,11 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 	if (!valid) {
 		MsgBox "Invalid Files"
 	}
+}
+
+myGui_Hide(thisGui) {
+	global mygui
+	mygui.Show("Hide")
 }
 mygui_Close(thisGui) {
 	trueExit(0, 0)
