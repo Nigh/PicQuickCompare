@@ -1,4 +1,4 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 SetWorkingDir(A_ScriptDir)
 #SingleInstance force
 #include meta.ahk
@@ -297,7 +297,7 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 					exinfo := Filexpro(A_LoopFileFullPath, "", "System.Photo.Orientation", "System.Photo.FNumber", "System.Photo.ISOSpeed", "System.Photo.FocalLength", "System.Photo.ExposureTime", "System.Photo.ExposureTimeNumerator", "System.Photo.ExposureTimeDenominator", "xInfo")
 					if (StrLen(exinfo["System.Photo.FocalLength"]) > 0) {
 						ex_focal := exinfo["System.Photo.FocalLength"] "mm"
-						ex_apture := "F" exinfo["System.Photo.FNumber"]
+						ex_apture := "F" Round(exinfo["System.Photo.FNumber"], 1)
 						ex_ISO := "ISO" exinfo["System.Photo.ISOSpeed"]
 						ex_exposure := ("0" exinfo["System.Photo.ExposureTime"]) + 0
 						if (ex_exposure < 1) {
