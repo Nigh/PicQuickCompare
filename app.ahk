@@ -25,6 +25,9 @@ OnExit(trueExit)
 
 MonitorGet(1, &Left, &Top, &Right, &Bottom)
 DPIScale := A_ScreenDPI / 96
+DPIScaled(n) {
+	return Round(n*DPIScale)
+}
 Screen_Height := Bottom - Top
 Screen_Width := Right - Left
 picture_array := []
@@ -57,20 +60,20 @@ if (IniRead("setting.ini", "setup", "runbackgroud", "0") == "1") {
 #include Gdip_All.ahk
 pGDI := Gdip_Startup()
 
-mygui := Gui("-AlwaysOnTop -ToolWindow -SysMenu -Owner")
-mygui.MarginX := 10
-mygui.MarginY := 10
+mygui := Gui("-AlwaysOnTop -ToolWindow -SysMenu -Owner -DpiScale")
+mygui.MarginX := DPIScaled(10)
+mygui.MarginY := DPIScaled(10)
 mygui.Title := appName
 myGui.OnEvent("Close", myGui_Close)
 myGui.OnEvent("DropFiles", mygui_DropFiles)
 if A_IsCompiled {
-	mygui.Add("Picture", "x10 y10 Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
+	mygui.Add("Picture", "x" DPIScaled(10) " y" DPIScaled(10) " Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
 } else {
-	mygui.Add("Picture", "x10 y10 Section", "app_title.png")
+	mygui.Add("Picture", "x" DPIScaled(10) " y" DPIScaled(10) " Section", "app_title.png")
 }
 
-mygui.SetFont("s8 Q5 bold", "Comic Sans MS")
-swapbtn := mygui.Add("Button", "xs y+5 h22 w90", 'SWAP(s)')
+mygui.SetFont("s" DPIScaled(8) " Q5 bold", "Comic Sans MS")
+swapbtn := mygui.Add("Button", "xs y+5 h" DPIScaled(22) " w" DPIScaled(90), 'SWAP(s)')
 swapbtn.OnEvent("Click", swap)
 
 autoCenterSwitch := mygui.Add("Checkbox", "x+10 yp hp " autoCenter_default_check, 'Auto Center')
@@ -78,23 +81,23 @@ autoCenterSwitch.OnEvent("Click", autoPosSwitch_cb)
 backgroundSwitch := mygui.Add("Checkbox", "x+10 yp hp " runbackgroud_default_check, 'Runs in background')
 backgroundSwitch.OnEvent("Click", backgroundSwitch_cb)
 
-mygui.SetFont("s10 Q5 norm", "Comic Sans MS")
-mygui.Add("Text", "xs y+0 h12", 'Current:')
-txt_indicator := mygui.Add("Text", "x+10 yp hp w360", 'NULL')
+mygui.SetFont("s" DPIScaled(10) " Q5 norm", "Comic Sans MS")
+mygui.Add("Text", "xs y+0 h" DPIScaled(12), 'Current:')
+txt_indicator := mygui.Add("Text", "x+10 yp hp w" DPIScaled(360), 'NULL')
 txt_indicator.SetFont("cTeal bold")
 
-mygui.Add("Text", "xs y+0 h12", 'EXIF:')
-txt_exif := mygui.Add("Text", "x+10 yp hp w360", 'NULL')
+mygui.Add("Text", "xs y+0 h" DPIScaled(12), 'EXIF:')
+txt_exif := mygui.Add("Text", "x+10 yp hp w" DPIScaled(360), 'NULL')
 txt_exif.SetFont("cNavy bold")
 
 picCurrentShow := 1
-pic := mygui.Add("Picture", "x10 y+0 w500 h400 0xE 0x200 0x800000 -0x40")
+pic := mygui.Add("Picture", "x10 y+0 w" DPIScaled(500) " h" DPIScaled(400) " 0xE 0x200 0x800000 -0x40")
 pic.OnEvent("Click", pic_on_click)
 pic.OnEvent("DoubleClick", pic_on_click)
 
-mygui.SetFont("s8 Q5 Norm", "Comic Sans MS")
+mygui.SetFont("s" DPIScaled(8) " Q5 Norm", "Comic Sans MS")
 info := Array()
-info.Push(mygui.Add("Text", "x420 y12 h0", "v" . version))
+info.Push(mygui.Add("Text", "x" DPIScaled(420) " y" DPIScaled(12) " h0", "v" . version))
 info.Push(mygui.Add("Link", "xp y+0 hp", 'bilibili: <a href="https://space.bilibili.com/895523">TecNico</a>'))
 info.Push(mygui.Add("Link", "xp y+0 hp", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
 
@@ -201,7 +204,7 @@ pic_on_click(thisGui, GuiCtrlObj*) {
 }
 
 create_pic_bitmap_cache(index) {
-	global picture_array, pic, DPIScale
+	global picture_array, pic
 
 	if (picture_array[index].pBitmap < 0) {
 		return
@@ -212,7 +215,7 @@ create_pic_bitmap_cache(index) {
 	}
 
 	Gdip_GetImageDimensions(picture_array[index].pBitmap, &W, &H)
-	percent := ctrlH / H * DPIScale
+	percent := ctrlH / H
 	picW := W * percent
 	picH := H * percent
 	picture_array[index].pBitmapShow := Gdip_CreateBitmap(picW, picH)
@@ -224,7 +227,7 @@ create_pic_bitmap_cache(index) {
 }
 
 pic_ctrl_set_size() {
-	global picture_array, pic, Screen_Width, Screen_Height, DPIScale, info
+	global picture_array, pic, Screen_Width, Screen_Height, info
 	h_max := 0
 	w_max := 0
 	ratio := 0
@@ -245,16 +248,16 @@ pic_ctrl_set_size() {
 		}
 	}
 
-	minW := 400
-	minH := 400
-	maxW := 0.95 * Screen_Width / DPIScale
-	maxH := 0.85 * Screen_Height / DPIScale
+	minW := DPIScaled(400)
+	minH := DPIScaled(400)
+	maxW := 0.95 * Screen_Width
+	maxH := 0.85 * Screen_Height
 
 	percent := 1
-	if (h_max > maxH / DPIScale) {
+	if (h_max > maxH) {
 		percent := Min(percent, maxH / h_max)
 	}
-	if (w_max > maxW / DPIScale) {
+	if (w_max > maxW) {
 		percent := Min(percent, maxW / w_max)
 	}
 	ctrlH := Round(h_max * percent) + 1
@@ -263,11 +266,11 @@ pic_ctrl_set_size() {
 	; MsgBox("W=" W "`nH=" H "`nctrlW=" ctrlW "`nctrlH=" ctrlH "`nDPIScale=" DPIScale "`npercent=" percent)
 	pic.Move(10, , ctrlW, ctrlH)
 	for _, inf in info {
-		inf.Move(Max(ctrlW - 90, 410))
+		inf.Move(Max(ctrlW - DPIScaled(90), DPIScaled(410)))
 	}
 	pic.gui.Show("AutoSize " setting_autoCenter)
 	pic.gui.GetPos(&X, &Y, &Width, &Height)
-	if (Y + Height >= 0.95 * Screen_Height / DPIScale) {
+	if (Y + Height >= 0.95 * Screen_Height) {
 		pic.gui.Show("yCenter")
 	}
 	pic.Redraw()
@@ -297,7 +300,7 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 					exinfo := Filexpro(A_LoopFileFullPath, "", "System.Photo.Orientation", "System.Photo.FNumber", "System.Photo.ISOSpeed", "System.Photo.FocalLength", "System.Photo.ExposureTime", "System.Photo.ExposureTimeNumerator", "System.Photo.ExposureTimeDenominator", "xInfo")
 					if (StrLen(exinfo["System.Photo.FocalLength"]) > 0) {
 						ex_focal := exinfo["System.Photo.FocalLength"] "mm"
-						ex_apture := "F" exinfo["System.Photo.FNumber"]
+						ex_apture := "F" Round(exinfo["System.Photo.FNumber"], 1)
 						ex_ISO := "ISO" exinfo["System.Photo.ISOSpeed"]
 						ex_exposure := ("0" exinfo["System.Photo.ExposureTime"]) + 0
 						if (ex_exposure < 1) {
