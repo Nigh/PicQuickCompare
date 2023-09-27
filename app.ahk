@@ -1,4 +1,4 @@
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 SetWorkingDir(A_ScriptDir)
 #SingleInstance force
 #include meta.ahk
@@ -40,6 +40,8 @@ loop 2
 		name: '',
 		pBitmap: -1,
 		exif: '',
+		fileSize: '',
+		picSize: '',
 		pBitmapShow: 0,
 		G: 0,
 		hBitmapShow: 0
@@ -92,7 +94,12 @@ mygui.Add("Text", "xs y+0 hp wp", 'EXIF:')
 txt_indicator := mygui.Add("Text", debugBorder "Section x+10 ys hp w" DPIScaled(270), 'NULL')
 txt_indicator.SetFont("cTeal bold")
 
-txt_exif := mygui.Add("Text", debugBorder "xp y+0 hp w" DPIScaled(360), 'NULL')
+picSize := mygui.Add("Text", debugBorder "Center x+2 yp hp", '0000000000')
+picSize.SetFont("cOlive bold")
+fileSize := mygui.Add("Text", debugBorder "Right x+5 yp hp w" DPIScaled(70), '0 kB')
+fileSize.SetFont("cMaroon bold")
+
+txt_exif := mygui.Add("Text", debugBorder "xs y+0 hp w" DPIScaled(270), 'NULL')
 txt_exif.SetFont("cNavy bold")
 
 picCurrentShow := 1
@@ -146,6 +153,20 @@ shortFilename(name) {
 	return name
 }
 
+sizeToStr(byte) {
+	if (byte < 1024) {
+		return byte "Bytes"
+	}
+	byte := Round(byte / 1024, 2)
+	if (byte < 1024) {
+		return byte "kB"
+	}
+	byte := Round(byte / 1024, 2)
+	if (byte < 1024) {
+		return byte "MB"
+	}
+	return "Inf"
+}
 
 copyCompare(GuiCtrlObj, info*) {
 	global mygui
@@ -291,7 +312,10 @@ pic_ctrl_set_size() {
 
 mygui_ctrl_show_pic(picture)
 {
+	global txt_indicator, pic, mygui, fileSize, picSize
 	txt_indicator.Text := shortFilename(picture.name)
+	fileSize.Text := picture.fileSize
+	picSize.Text := picture.picSize
 	txt_exif.Text := picture.exif
 	SetImage(pic.hwnd, picture.hBitmapShow)
 }
@@ -309,9 +333,9 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 				valid += 1
 				Loop Files, fullpath, "F" {
 					picCurrentShow := picCurrentShow ^ 0x3
-					exinfo := Filexpro(A_LoopFileFullPath, "", "System.Photo.Orientation", "System.Photo.FNumber", "System.Photo.ISOSpeed", "System.Photo.FocalLength", "System.Photo.ExposureTime", "System.Photo.ExposureTimeNumerator", "System.Photo.ExposureTimeDenominator", "xInfo")
+					exinfo := Filexpro(A_LoopFileFullPath, "", "System.Photo.Orientation", "System.Photo.FNumber", "System.Photo.ISOSpeed", "System.Photo.FocalLength", "System.Photo.ExposureTime", "System.Photo.ExposureTimeNumerator", "System.Photo.ExposureTimeDenominator", "System.Image.HorizontalSize", "System.Image.VerticalSize", "System.Size", "xInfo")
 					if (StrLen(exinfo["System.Photo.FocalLength"]) > 0) {
-						ex_focal := exinfo["System.Photo.FocalLength"] "mm"
+						ex_focal := Round(exinfo["System.Photo.FocalLength"]) "mm"
 						ex_apture := "F" Round(exinfo["System.Photo.FNumber"], 1)
 						ex_ISO := "ISO" exinfo["System.Photo.ISOSpeed"]
 						ex_exposure := ("0" exinfo["System.Photo.ExposureTime"]) + 0
@@ -334,6 +358,8 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 					picture_array[picCurrentShow].name := A_LoopFileName
 					picture_array[picCurrentShow].pBitmap := bitmap
 					picture_array[picCurrentShow].exif := exif
+					picture_array[picCurrentShow].fileSize := sizeToStr(exinfo["System.Size"])
+					picture_array[picCurrentShow].picSize := exinfo["System.Image.HorizontalSize"] "x" exinfo["System.Image.VerticalSize"]
 				}
 			}
 		}
