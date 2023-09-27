@@ -1,11 +1,8 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 SetWorkingDir(A_ScriptDir)
 #SingleInstance force
 #include meta.ahk
-;@Ahk2Exe-SetName %appName%
-;@Ahk2Exe-SetVersion %version%
-;@Ahk2Exe-SetMainIcon icon.ico
-;@Ahk2Exe-ExeName %appName%
+#include *i compile_prop.ahk
 ;@Ahk2Exe-AddResource *10 %A_ScriptDir%\app_title.png
 
 #include prod.ahk
