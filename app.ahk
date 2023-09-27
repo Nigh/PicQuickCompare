@@ -89,7 +89,7 @@ mygui.SetFont("s" DPIScaledFont(10) " Q5 norm", "Comic Sans MS")
 mygui.Add("Text", "Section xs y+0 h" DPIScaled(12), 'Current:')
 mygui.Add("Text", "xs y+0 hp wp", 'EXIF:')
 
-txt_indicator := mygui.Add("Text", debugBorder "x+10 ys hp w" DPIScaled(360), 'NULL')
+txt_indicator := mygui.Add("Text", debugBorder "Section x+10 ys hp w" DPIScaled(270), 'NULL')
 txt_indicator.SetFont("cTeal bold")
 
 txt_exif := mygui.Add("Text", debugBorder "xp y+0 hp w" DPIScaled(360), 'NULL')
@@ -138,6 +138,14 @@ if (setting_runbackgroud) {
 	TrayTip("Runs in Background.`nSelect pictures and press Ctrl+Q to compare.", "PicQuickCompare", 1)
 }
 Return
+
+shortFilename(name) {
+	if (StrLen(name) > 20) {
+		return SubStr(name, 1, 6) "..." SubStr(name, -9)
+	}
+	return name
+}
+
 
 copyCompare(GuiCtrlObj, info*) {
 	global mygui
@@ -283,8 +291,7 @@ pic_ctrl_set_size() {
 
 mygui_ctrl_show_pic(picture)
 {
-	global txt_indicator, pic, mygui
-	txt_indicator.Text := picture.name
+	txt_indicator.Text := shortFilename(picture.name)
 	txt_exif.Text := picture.exif
 	SetImage(pic.hwnd, picture.hBitmapShow)
 }
