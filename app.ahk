@@ -2,10 +2,7 @@
 SetWorkingDir(A_ScriptDir)
 #SingleInstance force
 #include meta.ahk
-;@Ahk2Exe-SetName %appName%
-;@Ahk2Exe-SetVersion %version%
-;@Ahk2Exe-SetMainIcon icon.ico
-;@Ahk2Exe-ExeName %appName%
+#include *i compile_prop.ahk
 ;@Ahk2Exe-AddResource *10 %A_ScriptDir%\app_title.png
 
 #include prod.ahk
@@ -22,11 +19,18 @@ OnExit(trueExit)
 ; ===============================================================
 ; ===============================================================
 ; your code below
-
+if (A_IsCompiled) {
+	debugBorder := ""
+} else {
+	debugBorder := "Border "
+}
 MonitorGet(1, &Left, &Top, &Right, &Bottom)
 DPIScale := A_ScreenDPI / 96
 DPIScaled(n) {
-	return Round(n*DPIScale)
+	return Round(n * DPIScale)
+}
+DPIScaledFont(n) {
+	return Round(n * (DPIScale ** 0.5))
 }
 Screen_Height := Bottom - Top
 Screen_Width := Right - Left
@@ -36,6 +40,8 @@ loop 2
 		name: '',
 		pBitmap: -1,
 		exif: '',
+		fileSize: '',
+		picSize: '',
 		pBitmapShow: 0,
 		G: 0,
 		hBitmapShow: 0
@@ -67,27 +73,33 @@ mygui.Title := appName
 myGui.OnEvent("Close", myGui_Close)
 myGui.OnEvent("DropFiles", mygui_DropFiles)
 if A_IsCompiled {
-	mygui.Add("Picture", "x" DPIScaled(10) " y" DPIScaled(10) " Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
+	mygui.Add("Picture", debugBorder "x" DPIScaled(10) " y" DPIScaled(10) " h" DPIScaled(30) " w-1 Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
 } else {
-	mygui.Add("Picture", "x" DPIScaled(10) " y" DPIScaled(10) " Section", "app_title.png")
+	mygui.Add("Picture", debugBorder "x" DPIScaled(10) " y" DPIScaled(10) " h" DPIScaled(30) " w-1 Section", "app_title.png")
 }
 
-mygui.SetFont("s" DPIScaled(8) " Q5 bold", "Comic Sans MS")
+mygui.SetFont("s" DPIScaledFont(8) " Q5 bold", "Comic Sans MS")
 swapbtn := mygui.Add("Button", "xs y+5 h" DPIScaled(22) " w" DPIScaled(90), 'SWAP(s)')
 swapbtn.OnEvent("Click", swap)
 
-autoCenterSwitch := mygui.Add("Checkbox", "x+10 yp hp " autoCenter_default_check, 'Auto Center')
+autoCenterSwitch := mygui.Add("Checkbox", debugBorder "x+10 yp hp " autoCenter_default_check, 'Auto Center')
 autoCenterSwitch.OnEvent("Click", autoPosSwitch_cb)
-backgroundSwitch := mygui.Add("Checkbox", "x+10 yp hp " runbackgroud_default_check, 'Runs in background')
+backgroundSwitch := mygui.Add("Checkbox", debugBorder "x+10 yp hp " runbackgroud_default_check, 'Runs in background')
 backgroundSwitch.OnEvent("Click", backgroundSwitch_cb)
 
-mygui.SetFont("s" DPIScaled(10) " Q5 norm", "Comic Sans MS")
-mygui.Add("Text", "xs y+0 h" DPIScaled(12), 'Current:')
-txt_indicator := mygui.Add("Text", "x+10 yp hp w" DPIScaled(360), 'NULL')
+mygui.SetFont("s" DPIScaledFont(10) " Q5 norm", "Comic Sans MS")
+mygui.Add("Text", "Section xs y+0 h" DPIScaled(12), 'Current:')
+mygui.Add("Text", "xs y+0 hp wp", 'EXIF:')
+
+txt_indicator := mygui.Add("Text", debugBorder "Section x+10 ys hp w" DPIScaled(270), 'NULL')
 txt_indicator.SetFont("cTeal bold")
 
-mygui.Add("Text", "xs y+0 h" DPIScaled(12), 'EXIF:')
-txt_exif := mygui.Add("Text", "x+10 yp hp w" DPIScaled(360), 'NULL')
+picSize := mygui.Add("Text", debugBorder "Center x+2 yp hp", '0000000000')
+picSize.SetFont("cOlive bold")
+fileSize := mygui.Add("Text", debugBorder "Right x+5 yp hp w" DPIScaled(70), '0 kB')
+fileSize.SetFont("cMaroon bold")
+
+txt_exif := mygui.Add("Text", debugBorder "xs y+0 hp w" DPIScaled(270), 'NULL')
 txt_exif.SetFont("cNavy bold")
 
 picCurrentShow := 1
@@ -95,11 +107,11 @@ pic := mygui.Add("Picture", "x10 y+0 w" DPIScaled(500) " h" DPIScaled(400) " 0xE
 pic.OnEvent("Click", pic_on_click)
 pic.OnEvent("DoubleClick", pic_on_click)
 
-mygui.SetFont("s" DPIScaled(8) " Q5 Norm", "Comic Sans MS")
+mygui.SetFont("s" DPIScaledFont(8) " Q5 Norm", "Comic Sans MS")
 info := Array()
-info.Push(mygui.Add("Text", "x" DPIScaled(420) " y" DPIScaled(12) " h0", "v" . version))
-info.Push(mygui.Add("Link", "xp y+0 hp", 'bilibili: <a href="https://space.bilibili.com/895523">TecNico</a>'))
-info.Push(mygui.Add("Link", "xp y+0 hp", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
+info.Push(mygui.Add("Text", debugBorder "x" DPIScaled(420) " y" DPIScaled(12) " h0", "v" . version))
+info.Push(mygui.Add("Link", debugBorder "xp y+0 hp", 'bilibili: <a href="https://space.bilibili.com/895523">TecNico</a>'))
+info.Push(mygui.Add("Link", debugBorder "xp y+0 hp", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
 
 if (setting_runbackgroud) {
 	mygui.Show("AutoSize Hide")
@@ -133,6 +145,28 @@ if (setting_runbackgroud) {
 	TrayTip("Runs in Background.`nSelect pictures and press Ctrl+Q to compare.", "PicQuickCompare", 1)
 }
 Return
+
+shortFilename(name) {
+	if (StrLen(name) > 20) {
+		return SubStr(name, 1, 6) "..." SubStr(name, -9)
+	}
+	return name
+}
+
+sizeToStr(byte) {
+	if (byte < 1024) {
+		return byte "Bytes"
+	}
+	byte := Round(byte / 1024, 2)
+	if (byte < 1024) {
+		return byte "kB"
+	}
+	byte := Round(byte / 1024, 2)
+	if (byte < 1024) {
+		return byte "MB"
+	}
+	return "Inf"
+}
 
 copyCompare(GuiCtrlObj, info*) {
 	global mygui
@@ -278,8 +312,10 @@ pic_ctrl_set_size() {
 
 mygui_ctrl_show_pic(picture)
 {
-	global txt_indicator, pic, mygui
-	txt_indicator.Text := picture.name
+	global txt_indicator, pic, mygui, fileSize, picSize
+	txt_indicator.Text := shortFilename(picture.name)
+	fileSize.Text := picture.fileSize
+	picSize.Text := picture.picSize
 	txt_exif.Text := picture.exif
 	SetImage(pic.hwnd, picture.hBitmapShow)
 }
@@ -297,9 +333,9 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 				valid += 1
 				Loop Files, fullpath, "F" {
 					picCurrentShow := picCurrentShow ^ 0x3
-					exinfo := Filexpro(A_LoopFileFullPath, "", "System.Photo.Orientation", "System.Photo.FNumber", "System.Photo.ISOSpeed", "System.Photo.FocalLength", "System.Photo.ExposureTime", "System.Photo.ExposureTimeNumerator", "System.Photo.ExposureTimeDenominator", "xInfo")
+					exinfo := Filexpro(A_LoopFileFullPath, "", "System.Photo.Orientation", "System.Photo.FNumber", "System.Photo.ISOSpeed", "System.Photo.FocalLength", "System.Photo.ExposureTime", "System.Photo.ExposureTimeNumerator", "System.Photo.ExposureTimeDenominator", "System.Image.HorizontalSize", "System.Image.VerticalSize", "System.Size", "xInfo")
 					if (StrLen(exinfo["System.Photo.FocalLength"]) > 0) {
-						ex_focal := exinfo["System.Photo.FocalLength"] "mm"
+						ex_focal := Round(exinfo["System.Photo.FocalLength"]) "mm"
 						ex_apture := "F" Round(exinfo["System.Photo.FNumber"], 1)
 						ex_ISO := "ISO" exinfo["System.Photo.ISOSpeed"]
 						ex_exposure := ("0" exinfo["System.Photo.ExposureTime"]) + 0
@@ -322,6 +358,8 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 					picture_array[picCurrentShow].name := A_LoopFileName
 					picture_array[picCurrentShow].pBitmap := bitmap
 					picture_array[picCurrentShow].exif := exif
+					picture_array[picCurrentShow].fileSize := sizeToStr(exinfo["System.Size"])
+					picture_array[picCurrentShow].picSize := exinfo["System.Image.HorizontalSize"] "x" exinfo["System.Image.VerticalSize"]
 				}
 			}
 		}
