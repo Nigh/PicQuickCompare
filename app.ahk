@@ -19,7 +19,11 @@ OnExit(trueExit)
 ; ===============================================================
 ; ===============================================================
 ; your code below
-
+if (A_IsCompiled) {
+	debugBorder := ""
+} else {
+	debugBorder := "Border "
+}
 MonitorGet(1, &Left, &Top, &Right, &Bottom)
 DPIScale := A_ScreenDPI / 96
 DPIScaled(n) {
@@ -64,27 +68,24 @@ mygui.Title := appName
 myGui.OnEvent("Close", myGui_Close)
 myGui.OnEvent("DropFiles", mygui_DropFiles)
 if A_IsCompiled {
-	mygui.Add("Picture", "x" DPIScaled(10) " y" DPIScaled(10) " Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
+	mygui.Add("Picture", debugBorder "x" DPIScaled(10) " y" DPIScaled(10) " h" DPIScaled(30) " w-1 Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
 } else {
-	mygui.Add("Picture", "x" DPIScaled(10) " y" DPIScaled(10) " Section", "app_title.png")
+	mygui.Add("Picture", debugBorder "x" DPIScaled(10) " y" DPIScaled(10) " h" DPIScaled(30) " w-1 Section", "app_title.png")
 }
 
 mygui.SetFont("s" DPIScaled(8) " Q5 bold", "Comic Sans MS")
 swapbtn := mygui.Add("Button", "xs y+5 h" DPIScaled(22) " w" DPIScaled(90), 'SWAP(s)')
 swapbtn.OnEvent("Click", swap)
 
-autoCenterSwitch := mygui.Add("Checkbox", "x+10 yp hp " autoCenter_default_check, 'Auto Center')
+autoCenterSwitch := mygui.Add("Checkbox", debugBorder "x+10 yp hp " autoCenter_default_check, 'Auto Center')
 autoCenterSwitch.OnEvent("Click", autoPosSwitch_cb)
-backgroundSwitch := mygui.Add("Checkbox", "x+10 yp hp " runbackgroud_default_check, 'Runs in background')
+backgroundSwitch := mygui.Add("Checkbox", debugBorder "x+10 yp hp " runbackgroud_default_check, 'Runs in background')
 backgroundSwitch.OnEvent("Click", backgroundSwitch_cb)
 
-mygui.SetFont("s" DPIScaled(10) " Q5 norm", "Comic Sans MS")
-mygui.Add("Text", "xs y+0 h" DPIScaled(12), 'Current:')
-txt_indicator := mygui.Add("Text", "x+10 yp hp w" DPIScaled(360), 'NULL')
+txt_indicator := mygui.Add("Text", debugBorder "x+10 ys hp w" DPIScaled(360), 'NULL')
 txt_indicator.SetFont("cTeal bold")
 
-mygui.Add("Text", "xs y+0 h" DPIScaled(12), 'EXIF:')
-txt_exif := mygui.Add("Text", "x+10 yp hp w" DPIScaled(360), 'NULL')
+txt_exif := mygui.Add("Text", debugBorder "xp y+0 hp w" DPIScaled(360), 'NULL')
 txt_exif.SetFont("cNavy bold")
 
 picCurrentShow := 1
@@ -94,9 +95,9 @@ pic.OnEvent("DoubleClick", pic_on_click)
 
 mygui.SetFont("s" DPIScaled(8) " Q5 Norm", "Comic Sans MS")
 info := Array()
-info.Push(mygui.Add("Text", "x" DPIScaled(420) " y" DPIScaled(12) " h0", "v" . version))
-info.Push(mygui.Add("Link", "xp y+0 hp", 'bilibili: <a href="https://space.bilibili.com/895523">TecNico</a>'))
-info.Push(mygui.Add("Link", "xp y+0 hp", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
+info.Push(mygui.Add("Text", debugBorder "x" DPIScaled(420) " y" DPIScaled(12) " h0", "v" . version))
+info.Push(mygui.Add("Link", debugBorder "xp y+0 hp", 'bilibili: <a href="https://space.bilibili.com/895523">TecNico</a>'))
+info.Push(mygui.Add("Link", debugBorder "xp y+0 hp", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
 
 if (setting_runbackgroud) {
 	mygui.Show("AutoSize Hide")
