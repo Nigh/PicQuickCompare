@@ -27,7 +27,10 @@ if (A_IsCompiled) {
 MonitorGet(1, &Left, &Top, &Right, &Bottom)
 DPIScale := A_ScreenDPI / 96
 DPIScaled(n) {
-	return Round(n*DPIScale)
+	return Round(n * DPIScale)
+}
+DPIScaledFont(n) {
+	return Round(n * (DPIScale ** 0.5))
 }
 Screen_Height := Bottom - Top
 Screen_Width := Right - Left
@@ -73,7 +76,7 @@ if A_IsCompiled {
 	mygui.Add("Picture", debugBorder "x" DPIScaled(10) " y" DPIScaled(10) " h" DPIScaled(30) " w-1 Section", "app_title.png")
 }
 
-mygui.SetFont("s" DPIScaled(8) " Q5 bold", "Comic Sans MS")
+mygui.SetFont("s" DPIScaledFont(8) " Q5 bold", "Comic Sans MS")
 swapbtn := mygui.Add("Button", "xs y+5 h" DPIScaled(22) " w" DPIScaled(90), 'SWAP(s)')
 swapbtn.OnEvent("Click", swap)
 
@@ -81,6 +84,10 @@ autoCenterSwitch := mygui.Add("Checkbox", debugBorder "x+10 yp hp " autoCenter_d
 autoCenterSwitch.OnEvent("Click", autoPosSwitch_cb)
 backgroundSwitch := mygui.Add("Checkbox", debugBorder "x+10 yp hp " runbackgroud_default_check, 'Runs in background')
 backgroundSwitch.OnEvent("Click", backgroundSwitch_cb)
+
+mygui.SetFont("s" DPIScaledFont(10) " Q5 norm", "Comic Sans MS")
+mygui.Add("Text", "Section xs y+0 h" DPIScaled(12), 'Current:')
+mygui.Add("Text", "xs y+0 hp wp", 'EXIF:')
 
 txt_indicator := mygui.Add("Text", debugBorder "x+10 ys hp w" DPIScaled(360), 'NULL')
 txt_indicator.SetFont("cTeal bold")
@@ -93,7 +100,7 @@ pic := mygui.Add("Picture", "x10 y+0 w" DPIScaled(500) " h" DPIScaled(400) " 0xE
 pic.OnEvent("Click", pic_on_click)
 pic.OnEvent("DoubleClick", pic_on_click)
 
-mygui.SetFont("s" DPIScaled(8) " Q5 Norm", "Comic Sans MS")
+mygui.SetFont("s" DPIScaledFont(8) " Q5 Norm", "Comic Sans MS")
 info := Array()
 info.Push(mygui.Add("Text", debugBorder "x" DPIScaled(420) " y" DPIScaled(12) " h0", "v" . version))
 info.Push(mygui.Add("Link", debugBorder "xp y+0 hp", 'bilibili: <a href="https://space.bilibili.com/895523">TecNico</a>'))
