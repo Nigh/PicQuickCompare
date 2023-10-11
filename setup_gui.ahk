@@ -10,13 +10,20 @@ hotkeyWinWidth := DPIScaled(80)
 padding := DPIScaled(20)
 
 pqc_setup := Gui("+ToolWindow +AlwaysOnTop -SysMenu -DPIScale +OwnDialogs +Owner" mygui.Hwnd, "setup")
+
+if A_IsCompiled {
+	pqc_setup.Add("Picture", "x" gui_margin " y" gui_margin " h" DPIScaledFont(32)*2 " w-1 Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
+} else {
+	pqc_setup.Add("Picture", "x" gui_margin " y" gui_margin " h" DPIScaledFont(32)*2 " w-1 Section", "app_title.png")
+}
+
 pqc_setup.SetFont(, "Consolas")
 pqc_setup.SetFont(, "MV Boli")
 pqc_setup.SetFont(, "Comic Sans MS")
 
 pqc_setup.SetFont("s" DPIScaledFont(32) " w700 cc07070")
 
-pqc_setup.Add("Text", "x" padding//2 " y" DPIScaled(5), "Setup")
+pqc_setup.Add("Text", "x+0 y" DPIScaled(5), "Setup")
 
 pqc_setup.SetFont(h2FontStyle)
 pqc_setup.Add("Text", "x" padding " y+" DPIScaled(10) " section", "Position")
@@ -194,3 +201,4 @@ pqc_setup_show() {
 	pqc_setup.Show("yCenter w" clientWidth)
 	mygui.Opt("+Disabled")
 }
+; pqc_setup_show()

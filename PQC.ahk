@@ -53,35 +53,27 @@ mygui.MarginY := gui_margin
 mygui.Title := appName
 myGui.OnEvent("Close", myGui_Close)
 myGui.OnEvent("DropFiles", mygui_DropFiles)
+
 if A_IsCompiled {
-	mygui.Add("Picture", debugBorder "x" gui_margin " y" gui_margin " h" DPIScaled(30) " w-1 Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
+	mygui.Add("Picture", "x" gui_margin " y" gui_margin " h" DPIScaledFont(10)*4 " w-1 Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
 } else {
-	mygui.Add("Picture", debugBorder "x" gui_margin " y" gui_margin " h" DPIScaled(30) " w-1 Section", "app_title.png")
+	mygui.Add("Picture", "x" gui_margin " y" gui_margin " h" DPIScaledFont(10)*4 " w-1 Section", "app_title.png")
 }
 
-; mygui.SetFont("s" DPIScaledFont(8) " Q5 bold", "Comic Sans MS")
-; swapbtn := mygui.Add("Button", "xs y+5 h" DPIScaled(22) " w" DPIScaled(90), 'SWAP(s)')
-; swapbtn.OnEvent("Click", swap)
-
-; autoCenterSwitch := mygui.Add("Checkbox", debugBorder "x+10 yp hp " settings.autoCenter_default_check, 'Auto Center')
-; autoCenterSwitch.OnEvent("Click", autoPosSwitch_cb)
-; backgroundSwitch := mygui.Add("Checkbox", debugBorder "x+10 yp hp " runbackgroud_default_check, 'Runs in background')
-; backgroundSwitch.OnEvent("Click", backgroundSwitch_cb)
-
 mygui.SetFont("s" DPIScaledFont(10) " Q5 norm", "Comic Sans MS")
-mygui.Add("Text", "Section xs y+0 h" DPIScaled(12), 'Current:')
+mygui.Add("Text", "x+" DPIScaled(10) " yp Section h" DPIScaled(12), 'Current:')
 mygui.Add("Text", "xs y+0 hp wp", 'EXIF:')
 
 txt_indicator := mygui.Add("Text", debugBorder "Section x+10 ys hp w" DPIScaled(270), 'NULL')
 txt_indicator.SetFont("cTeal bold")
 
-picSize := mygui.Add("Text", debugBorder "Center x+2 yp hp", '0000000000')
+txt_exif := mygui.Add("Text", debugBorder "xs y+0 hp w" DPIScaled(270), 'NULL')
+txt_exif.SetFont("cNavy bold")
+
+picSize := mygui.Add("Text", debugBorder "Center xp y+0 hp", '0000000000')
 picSize.SetFont("cOlive bold")
 fileSize := mygui.Add("Text", debugBorder "Right x+5 yp hp w" DPIScaled(70), '0 kB')
 fileSize.SetFont("cMaroon bold")
-
-txt_exif := mygui.Add("Text", debugBorder "xs y+0 hp w" DPIScaled(270), 'NULL')
-txt_exif.SetFont("cNavy bold")
 
 picCurrentShow := 1
 pic := mygui.Add("Picture", "x10 y+0 w" DPIScaled(500) " h" DPIScaled(400) " 0xE 0x200 0x800000 -0x40")
@@ -90,7 +82,7 @@ pic.OnEvent("DoubleClick", pic_on_click)
 
 mygui.SetFont("s" DPIScaledFont(8) " Q5 Norm", "Comic Sans MS")
 info := Array()
-info.Push(mygui.Add("Text", debugBorder "x" DPIScaled(420) " y" DPIScaled(12) " h0", "v" . version))
+info.Push(mygui.Add("Text", debugBorder "x" DPIScaled(420) " ys h0", "v" . version))
 info.Push(mygui.Add("Link", debugBorder "xp y+0 hp", 'bilibili: <a href="https://space.bilibili.com/895523">TecNico</a>'))
 info.Push(mygui.Add("Link", debugBorder "xp y+0 hp", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
 
@@ -191,29 +183,7 @@ copyCompare(GuiCtrlObj, info*) {
 }
 
 #include Filexpro.ahk
-autoPosSwitch_cb(GuiCtrlObj, Info*) {
-	global setting_autoCenter
-	if (GuiCtrlObj.Value > 0) {
-		setting_autoCenter := "center"
-		IniWrite("1", "setting.ini", "setup", "autocenter")
-	} else {
-		setting_autoCenter := ""
-		IniWrite("0", "setting.ini", "setup", "autocenter")
-	}
-	GuiCtrlObj.Opt("+Disabled")
-	SetTimer(() => GuiCtrlObj.Opt("-Disabled"), -600)
-}
-backgroundSwitch_cb(GuiCtrlObj, Info*) {
-	global setting_autoCenter
-	if (GuiCtrlObj.Value > 0) {
-		IniWrite("1", "setting.ini", "setup", "runbackgroud")
-	} else {
-		IniWrite("0", "setting.ini", "setup", "runbackgroud")
-	}
-	Reload
-	; GuiCtrlObj.Opt("+Disabled")
-	; SetTimer(() => GuiCtrlObj.Opt("-Disabled"), -600)
-}
+
 isSwapable() {
 	global
 	return picture_array[picCurrentShow ^ 0x3].pBitmap > 0
