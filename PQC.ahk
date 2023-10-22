@@ -33,7 +33,7 @@ settings := Object()
 settings.postion := Abs(Round(IniRead("setting.ini", "setup", "position", "1") + 0))
 settings.postion := Min(Max(1, settings.postion), 4)
 
-settings.max_width := IniRead("setting.ini", "setup", "width", Screen_Width-2*gui_margin)
+settings.max_width := IniRead("setting.ini", "setup", "width", Screen_Width-4*gui_margin)
 
 settings.runbackgroud := IniRead("setting.ini", "setup", "runbackgroud", "0") + 0
 
@@ -262,7 +262,7 @@ pic_ctrl_set_size() {
 
 	minW := DPIScaled(400)
 	minH := DPIScaled(400)
-	maxW := 0.95 * Screen_Width
+	maxW := settings.max_width
 	maxH := 0.85 * Screen_Height
 
 	percent := 1
