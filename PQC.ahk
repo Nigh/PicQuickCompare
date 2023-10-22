@@ -20,12 +20,16 @@ loop 2
 	picture_array.Push({
 		name: '',
 		pBitmap: -1,
-		exif: '',
+		exif: Object(),
+		exifstr: '',
 		fileSize: '',
 		picSize: '',
 		pBitmapShow: 0,
-		G: 0,
-		hBitmapShow: 0
+		GShow: 0,
+		hBitmapShow: 0,
+		pBitmapInfo: 0,
+		GInfo: 0,
+		hBitmapInfo: 0
 	})
 
 settings := Object()
@@ -54,29 +58,47 @@ mygui.Title := appName
 myGui.OnEvent("Close", myGui_Close)
 myGui.OnEvent("DropFiles", mygui_DropFiles)
 
-if A_IsCompiled {
-	mygui.Add("Picture", "x" gui_margin " y" gui_margin " h" DPIScaledFont(10)*4 " w-1 Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
-} else {
-	mygui.Add("Picture", "x" gui_margin " y" gui_margin " h" DPIScaledFont(10)*4 " w-1 Section", "app_title.png")
-}
+info_width := DPIScaled(334)
+info_height := DPIScaled(66)
+logo := mygui.add("Picture", "x" gui_margin " y+0 w" info_height " h" info_height " 0xE 0x200 " debugBorder,)
+txt_info := mygui.add("Picture", "x+0 yp w" info_width " h" info_height " 0xE 0x200 " debugBorder,)
 
-mygui.SetFont("s" DPIScaledFont(10) " Q5 norm", "Comic Sans MS")
-mygui.Add("Text", "x+" DPIScaled(10) " yp Section h" DPIScaled(12), 'Current:')
-mygui.Add("Text", "xs y+0 hp wp", 'EXIF:')
+pBitmapLogo := Gdip_CreateBitmap(info_height, info_height)
+G_Logo := Gdip_GraphicsFromImage(pBitmapLogo)
+Gdip_SetSmoothingMode(G_Logo, 4)
+Gdip_SetInterpolationMode(G_Logo, 7)
 
-txt_indicator := mygui.Add("Text", debugBorder "Section x+10 ys hp w" DPIScaled(270), 'NULL')
-txt_indicator.SetFont("cTeal bold")
+pBrush := Gdip_BrushCreateSolid(0xff81dad4)
+points := "0," 0.2*info_height
+points .= "|" 0.7*info_height "," 0.2*info_height
+points .= "|" 0.4*info_height "," 0.9*info_height
+points .= "|0," 0.9*info_height
+Gdip_FillPolygon(G_Logo, pBrush, points)
+Gdip_DeleteBrush(pBrush)
 
-txt_exif := mygui.Add("Text", debugBorder "xs y+0 hp w" DPIScaled(270), 'NULL')
-txt_exif.SetFont("cNavy bold")
+pBrush := Gdip_BrushCreateSolid(0xffe9b9a7)
+points := 0.6*info_height "," 0.1*info_height
+points .= "|" info_height "," 0.1*info_height
+points .= "|" info_height "," 0.8*info_height
+points .= "|" 0.3*info_height "," 0.8*info_height
+Gdip_FillPolygon(G_Logo, pBrush, points)
+Gdip_DeleteBrush(pBrush)
 
-picSize := mygui.Add("Text", debugBorder "Center xp y+0 hp", '0000000000')
-picSize.SetFont("cOlive bold")
-fileSize := mygui.Add("Text", debugBorder "Right x+5 yp hp w" DPIScaled(70), '0 kB')
-fileSize.SetFont("cMaroon bold")
+hBitmapLogo := Gdip_CreateHBITMAPFromBitmap(pBitmapLogo)
+SetImage(logo.hwnd, hBitmapLogo)
+Gdip_DeleteGraphics(G_Logo), Gdip_DisposeImage(pBitmapLogo), DeleteObject(hBitmapLogo)
+
+pBitmapInfo := Gdip_CreateBitmap(info_width, info_height)
+G_Info := Gdip_GraphicsFromImage(pBitmapInfo)
+Gdip_SetSmoothingMode(G_Info, 4)
+Gdip_SetInterpolationMode(G_Info, 7)
+logoSize := info_height
+Gdip_TextToGraphics(G_Info, "PicQuickCompare", "x0 y0 w" info_width " h" info_height " vCenter cff000000 s" DPIScaledFont(38) " R4 Bold", "MV Boli")
+hBitmapInfo := Gdip_CreateHBITMAPFromBitmap(pBitmapInfo)
+SetImage(txt_info.hwnd, hBitmapInfo)
 
 picCurrentShow := 1
-pic := mygui.Add("Picture", "x10 y+0 w" DPIScaled(500) " h" DPIScaled(400) " 0xE 0x200 0x800000 -0x40")
+pic := mygui.Add("Picture", "x" gui_margin " y+0 w" DPIScaled(500) " h" DPIScaled(400) " 0xE 0x200 0x800000 -0x40")
 pic.OnEvent("Click", pic_on_click)
 pic.OnEvent("DoubleClick", pic_on_click)
 
@@ -216,14 +238,15 @@ pic_on_click(thisGui, GuiCtrlObj*) {
 }
 
 create_pic_bitmap_cache(index) {
-	global picture_array, pic
+	global picture_array, pic, info_width, info_height
 
 	if (picture_array[index].pBitmap < 0) {
 		return
 	}
 	pic.GetPos(, , , &ctrlH)
-	if (picture_array[index].G) {
-		Gdip_DeleteGraphics(picture_array[index].G), Gdip_DisposeImage(picture_array[index].pBitmapShow), DeleteObject(picture_array[index].hBitmapShow)
+	if (picture_array[index].GShow) {
+		Gdip_DeleteGraphics(picture_array[index].GShow), Gdip_DisposeImage(picture_array[index].pBitmapShow), DeleteObject(picture_array[index].hBitmapShow)
+		Gdip_DeleteGraphics(picture_array[index].GInfo), Gdip_DisposeImage(picture_array[index].pBitmapInfo), DeleteObject(picture_array[index].hBitmapInfo)
 	}
 
 	Gdip_GetImageDimensions(picture_array[index].pBitmap, &W, &H)
@@ -231,11 +254,26 @@ create_pic_bitmap_cache(index) {
 	picW := W * percent
 	picH := H * percent
 	picture_array[index].pBitmapShow := Gdip_CreateBitmap(picW, picH)
-	picture_array[index].G := Gdip_GraphicsFromImage(picture_array[index].pBitmapShow)
-	Gdip_SetSmoothingMode(picture_array[index].G, 4)
-	Gdip_SetInterpolationMode(picture_array[index].G, 7)
-	Gdip_DrawImage(picture_array[index].G, picture_array[index].pBitmap, 0, 0, picW, picH)
+	picture_array[index].GShow := Gdip_GraphicsFromImage(picture_array[index].pBitmapShow)
+	Gdip_SetSmoothingMode(picture_array[index].GShow, 4)
+	Gdip_SetInterpolationMode(picture_array[index].GShow, 7)
+	Gdip_DrawImage(picture_array[index].GShow, picture_array[index].pBitmap, 0, 0, picW, picH)
 	picture_array[index].hBitmapShow := Gdip_CreateHBITMAPFromBitmap(picture_array[index].pBitmapShow)
+
+	; create txt info bitmap
+	picture_array[index].pBitmapInfo := Gdip_CreateBitmap(info_width, info_height)
+	picture_array[index].GInfo := Gdip_GraphicsFromImage(picture_array[index].pBitmapInfo)
+
+	RegExMatch(picture_array[index].name, "^(?<filename>.+)\.(?<ext>.*)$", &match)
+	Gdip_TextToGraphics(picture_array[index].GInfo, match.filename, "R4 Bold NoWrap Center Underline y0 x0 w" info_width "h" info_height//3 "cff000000 s" DPIScaledFont(18), "Microsoft JhengHei")
+
+	Gdip_TextToGraphics(picture_array[index].GInfo, StrUpper(match.ext), "R4 Bold NoWrap Center x0 y" info_height//3 " w" info_width//3 "h" info_height//3 "cff800024 s" DPIScaledFont(18), "Arial")
+	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].picSize, "R4 Bold NoWrap Center x" info_width*1//3 " y" info_height//3 " w" info_width//3 "h" info_height//3 "cff00806d s" DPIScaledFont(18), "Arial")
+	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].fileSize, "R4 Bold NoWrap Center x" info_width*2//3 " y" info_height//3 " w" info_width//3 "h" info_height//3 "cff3e0080 s" DPIScaledFont(18), "Arial")
+	if(picture_array[index].exifstr!="") {
+		Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].exifstr, "R4 Bold NoWrap Center x0 y" info_height*2//3 " w" info_width "h" info_height//3 "cff525252 s" DPIScaledFont(18), "Arial")
+	}
+	picture_array[index].hBitmapInfo := Gdip_CreateHBITMAPFromBitmap(picture_array[index].pBitmapInfo)
 }
 
 pic_ctrl_set_size() {
@@ -300,11 +338,8 @@ pic_ctrl_set_size() {
 
 mygui_ctrl_show_pic(picture)
 {
-	global txt_indicator, pic, mygui, fileSize, picSize
-	txt_indicator.Text := shortFilename(picture.name)
-	fileSize.Text := picture.fileSize
-	picSize.Text := picture.picSize
-	txt_exif.Text := picture.exif
+	global pic, txt_info
+	SetImage(txt_info.hwnd, picture.hBitmapInfo)
 	SetImage(pic.hwnd, picture.hBitmapShow)
 }
 
@@ -323,16 +358,23 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 					picCurrentShow := picCurrentShow ^ 0x3
 					exinfo := Filexpro(A_LoopFileFullPath, "", "System.Photo.Orientation", "System.Photo.FNumber", "System.Photo.ISOSpeed", "System.Photo.FocalLength", "System.Photo.ExposureTime", "System.Photo.ExposureTimeNumerator", "System.Photo.ExposureTimeDenominator", "System.Image.HorizontalSize", "System.Image.VerticalSize", "System.Size", "xInfo")
 					if (StrLen(exinfo["System.Photo.FocalLength"]) > 0) {
-						ex_focal := Round(exinfo["System.Photo.FocalLength"]) "mm"
-						ex_apture := "F" Round(exinfo["System.Photo.FNumber"], 1)
-						ex_ISO := "ISO" exinfo["System.Photo.ISOSpeed"]
+						picture_array[picCurrentShow].exif.focal := Round(exinfo["System.Photo.FocalLength"])
+						picture_array[picCurrentShow].exif.apture := Round(exinfo["System.Photo.FNumber"], 1)
+						picture_array[picCurrentShow].exif.ISO := exinfo["System.Photo.ISOSpeed"]
 						ex_exposure := ("0" exinfo["System.Photo.ExposureTime"]) + 0
 						if (ex_exposure < 1) {
-							ex_exposure := exinfo["System.Photo.ExposureTimeNumerator"] "/" exinfo["System.Photo.ExposureTimeDenominator"] "s"
+							ex_exposure := exinfo["System.Photo.ExposureTimeNumerator"] "/" exinfo["System.Photo.ExposureTimeDenominator"]
 						}
-						exif := ex_focal "  " ex_apture "  " ex_exposure "  " ex_ISO
+						picture_array[picCurrentShow].exif.exposure := ex_exposure
+						ex_exposure .= "s"
+						ex_focal := picture_array[picCurrentShow].exif.focal "mm"
+						ex_apture := "F" picture_array[picCurrentShow].exif.apture
+						ex_ISO := "ISO" picture_array[picCurrentShow].exif.ISO
+
+						exif_string := ex_focal "  " ex_apture "  " ex_exposure "  " ex_ISO
 					} else {
-						exif := "NULL"
+						exif_string := ""
+						picture_array[picCurrentShow].exif := Object()
 					}
 					if (exinfo["System.Photo.Orientation"] == "8") {
 						Gdip_ImageRotateFlip(bitmap, 3)
@@ -345,7 +387,7 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 					}
 					picture_array[picCurrentShow].name := A_LoopFileName
 					picture_array[picCurrentShow].pBitmap := bitmap
-					picture_array[picCurrentShow].exif := exif
+					picture_array[picCurrentShow].exifstr := exif_string
 					picture_array[picCurrentShow].fileSize := sizeToStr(exinfo["System.Size"])
 					picture_array[picCurrentShow].picSize := exinfo["System.Image.HorizontalSize"] "x" exinfo["System.Image.VerticalSize"]
 				}
