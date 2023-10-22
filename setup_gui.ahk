@@ -204,4 +204,5 @@ pqc_setup_show() {
 	pqc_setup.Show("yCenter w" clientWidth)
 	mygui.Opt("+Disabled")
 }
+; enable for test
 ; pqc_setup_show()
