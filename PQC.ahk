@@ -266,12 +266,9 @@ pic_ctrl_set_size() {
 	maxH := 0.85 * Screen_Height
 
 	percent := 1
-	if (h_max > maxH) {
-		percent := Min(percent, maxH / h_max)
-	}
-	if (w_max > maxW) {
-		percent := Min(percent, maxW / w_max)
-	}
+	percent := Min(percent, maxH / h_max)
+	percent := Min(percent, maxW / w_max)
+	percent *= Min(maxW / (h_max * percent * ratio), 1)
 	ctrlH := Round(h_max * percent) + 1
 	ctrlW := Round(ctrlH * ratio) + 1
 	; MsgBox("h_max=" h_max "`nw_max=" w_max "`nmaxH=" maxH "`nmaxW=" maxW)
