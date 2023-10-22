@@ -4,7 +4,7 @@ if (A_IsCompiled) {
 } else {
 	debugBorder := "Border "
 }
-MonitorGet(1, &Left, &Top, &Right, &Bottom)
+MonitorGet(0, &Left, &Top, &Right, &Bottom)
 DPIScale := A_ScreenDPI / 96
 DPIScaled(n) {
 	return Round(n * DPIScale)
