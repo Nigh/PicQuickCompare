@@ -37,8 +37,8 @@ setup_position.Push(pqc_setup.Add("Radio", "x+0 wp", "right"))
 pqc_setup.SetFont(h2FontStyle)
 pqc_setup.Add("Text", "xs " header_gap, "Max Width")
 pqc_setup.SetFont(textFontStyle)
-width_range := " Range" Screen_Width//4 "-" Screen_Width-2*mygui.MarginX " TickInterval" Screen_Width//12 " "
-setup_maxwidth := pqc_setup.Add("Slider", "ToolTipBottom Thick" width_range "vSetup_Width" item_gap "w" clientWidth-2*padding, Screen_Width-2*mygui.MarginX)
+width_range := " Range" Screen_Width//4 "-" Screen_Width-4*mygui.MarginX " TickInterval" Screen_Width//12 " "
+setup_maxwidth := pqc_setup.Add("Slider", "ToolTipBottom Thick" width_range "vSetup_Width" item_gap "w" clientWidth-2*padding, Screen_Width-4*mygui.MarginX)
 
 pqc_setup.SetFont(h2FontStyle)
 pqc_setup.Add("Text", "xs " header_gap, "Mode")

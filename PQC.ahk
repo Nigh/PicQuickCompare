@@ -4,7 +4,7 @@ if (A_IsCompiled) {
 } else {
 	debugBorder := "Border "
 }
-MonitorGet(1, &Left, &Top, &Right, &Bottom)
+MonitorGet(0, &Left, &Top, &Right, &Bottom)
 DPIScale := A_ScreenDPI / 96
 DPIScaled(n) {
 	return Round(n * DPIScale)
@@ -33,7 +33,7 @@ settings := Object()
 settings.postion := Abs(Round(IniRead("setting.ini", "setup", "position", "1") + 0))
 settings.postion := Min(Max(1, settings.postion), 4)
 
-settings.max_width := IniRead("setting.ini", "setup", "width", Screen_Width-2*gui_margin)
+settings.max_width := IniRead("setting.ini", "setup", "width", Screen_Width-4*gui_margin)
 
 settings.runbackgroud := IniRead("setting.ini", "setup", "runbackgroud", "0") + 0
 
@@ -262,16 +262,13 @@ pic_ctrl_set_size() {
 
 	minW := DPIScaled(400)
 	minH := DPIScaled(400)
-	maxW := 0.95 * Screen_Width
+	maxW := settings.max_width
 	maxH := 0.85 * Screen_Height
 
 	percent := 1
-	if (h_max > maxH) {
-		percent := Min(percent, maxH / h_max)
-	}
-	if (w_max > maxW) {
-		percent := Min(percent, maxW / w_max)
-	}
+	percent := Min(percent, maxH / h_max)
+	percent := Min(percent, maxW / w_max)
+	percent *= Min(maxW / (h_max * percent * ratio), 1)
 	ctrlH := Round(h_max * percent) + 1
 	ctrlW := Round(ctrlH * ratio) + 1
 	; MsgBox("h_max=" h_max "`nw_max=" w_max "`nmaxH=" maxH "`nmaxW=" maxW)
@@ -280,12 +277,23 @@ pic_ctrl_set_size() {
 	for _, inf in info {
 		inf.Move(Max(ctrlW - DPIScaled(90), DPIScaled(410)))
 	}
-	; TODO: show position
-	pic.gui.Show("AutoSize ")
-	; pic.gui.Show("AutoSize " setting_autoCenter)
+	switch settings.postion {
+		Default:
+		case 1:
+			pic.gui.Show("AutoSize")
+		case 2:
+			pic.gui.Show("AutoSize x0")
+		case 3:
+			pic.gui.Show("AutoSize xCenter")
+		case 4:
+			pic.gui.Show("AutoSize")
+	}
 	pic.gui.GetPos(&X, &Y, &Width, &Height)
 	if (Y + Height >= 0.95 * Screen_Height) {
 		pic.gui.Show("yCenter")
+	}
+	if (settings.postion == 4) {
+		pic.gui.Show("x" Screen_Width - Width)
 	}
 	pic.Redraw()
 }
