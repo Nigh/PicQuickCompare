@@ -10,7 +10,7 @@ gotoWebpage_maker(page)
 
 setTray()
 {
-	global version, trueExit
+	global version, trueExit, customTrayMenu
 	trayExit(*){
 		trueExit("","")
 	}
@@ -18,6 +18,14 @@ setTray()
 	tray.delete
 	tray.add("v" . version, (*)=>{})
 	tray.add()
+	if (customTrayMenu.HasOwnProp("valid") && customTrayMenu.HasOwnProp("menu")) {
+		For , Value in customTrayMenu.menu
+		{
+			tray.add(Value.name, Value.func)
+			tray.Default := Value.name
+		}
+		tray.add()
+	}
 	tray.add("Github 页面", gotoWebpage_maker("https://github.com/Nigh/ahk-autoupdate-template"))
 	tray.add("Donate 捐助", gotoWebpage_maker("https://ko-fi.com/xianii"))
 	tray.add("Exit", trayExit)
