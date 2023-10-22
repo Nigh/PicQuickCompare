@@ -93,6 +93,7 @@ pqc_setup_cancel(*) {
 	global
 	pqc_setup.Hide()
 	mygui.Opt("-Disabled")
+	mygui.Show("NA")
 }
 
 compare_hotkey_state_update(*) {
