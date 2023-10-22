@@ -10,6 +10,10 @@ repoName := "PicQuickCompare"
 downloadUrl := "/" GitHubID "/" repoName "/releases/latest/download/"
 update_log := "
 (
-v0.3.X 更新日志
+v0.3.X 更新日志汇总
+
+------ v0.3.0 ------
 1. 增加设置界面
+2. 修复多显示器识别序号
+3. 修复特定场景下的最大宽度限制计算错误
 )"
