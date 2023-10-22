@@ -277,12 +277,23 @@ pic_ctrl_set_size() {
 	for _, inf in info {
 		inf.Move(Max(ctrlW - DPIScaled(90), DPIScaled(410)))
 	}
-	; TODO: show position
-	pic.gui.Show("AutoSize ")
-	; pic.gui.Show("AutoSize " setting_autoCenter)
+	switch settings.postion {
+		Default:
+		case 1:
+			pic.gui.Show("AutoSize")
+		case 2:
+			pic.gui.Show("AutoSize x0")
+		case 3:
+			pic.gui.Show("AutoSize xCenter")
+		case 4:
+			pic.gui.Show("AutoSize")
+	}
 	pic.gui.GetPos(&X, &Y, &Width, &Height)
 	if (Y + Height >= 0.95 * Screen_Height) {
 		pic.gui.Show("yCenter")
+	}
+	if (settings.postion == 4) {
+		pic.gui.Show("x" Screen_Width - Width)
 	}
 	pic.Redraw()
 }
