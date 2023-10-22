@@ -18,8 +18,8 @@ if A_IsCompiled {
 }
 
 pqc_setup.SetFont(, "Consolas")
-pqc_setup.SetFont(, "MV Boli")
 pqc_setup.SetFont(, "Comic Sans MS")
+pqc_setup.SetFont(, "Segoe UI")
 
 pqc_setup.SetFont("s" DPIScaledFont(32) " w700 cc07070")
 
