@@ -51,7 +51,7 @@ pqc_setup.Add("Text", "xs " header_gap, "Hotkeys")
 
 pqc_setup.SetFont(textFontStyle)
 setup_hotkey_swap := pqc_setup.Add("Hotkey", item_gap "w" clientWidth-2*padding-hotkeyWinWidth)
-setup_hotkeyWin1 := pqc_setup.Add("CheckBox", "x+10 hp w" hotkeyWinWidth, "Win")
+setup_hotkeyWin1 := pqc_setup.Add("CheckBox", "x+10 hp w" hotkeyWinWidth, "win")
 pqc_setup.SetFont("s10")
 pqc_setup.Add("Text", "xs" item_gap, "Swap hotkey is ")
 hotkey_swapText := pqc_setup.Add("Text", "x+0 hp cc07070 w260", "")
@@ -61,7 +61,7 @@ setup_hotkeyWin1.OnEvent("Click", hotkey_swap_text_update)
 
 pqc_setup.SetFont(textFontStyle)
 setup_hotkey_close := pqc_setup.Add("Hotkey", "xs " item_gap "w" clientWidth-2*padding-hotkeyWinWidth)
-setup_hotkeyWin2 := pqc_setup.Add("CheckBox", "x+10 hp w" hotkeyWinWidth, "Win")
+setup_hotkeyWin2 := pqc_setup.Add("CheckBox", "x+10 hp w" hotkeyWinWidth, "win")
 pqc_setup.SetFont("s10")
 pqc_setup.Add("Text", "xs" item_gap, "Close hotkey is ")
 hotkey_closeText := pqc_setup.Add("Text", "x+0 hp cc07070 w260", "")
@@ -71,7 +71,7 @@ setup_hotkeyWin2.OnEvent("Click", hotkey_close_text_update)
 
 pqc_setup.SetFont(textFontStyle)
 setup_hotkey_compare := pqc_setup.Add("Hotkey", "xs " item_gap "w" clientWidth-2*padding-hotkeyWinWidth)
-setup_hotkeyWin3 := pqc_setup.Add("CheckBox", "x+10 hp w" hotkeyWinWidth, "Win")
+setup_hotkeyWin3 := pqc_setup.Add("CheckBox", "x+10 hp w" hotkeyWinWidth, "win")
 pqc_setup.SetFont("s10")
 pqc_setup.Add("Text", "xs" item_gap, "Compare hotkey is ")
 hotkey_compareText := pqc_setup.Add("Text", "x+0 hp cc07070 w260", "")
@@ -133,13 +133,16 @@ pqc_setup_save(*) {
 		settings.hotkey_compare := "#" settings.hotkey_compare
 	}
 
-	IniWrite("position=" settings.postion, "setting.ini", "setup")
-	IniWrite("width=" settings.max_width, "setting.ini", "setup")
-	IniWrite("runbackgroud=" settings.runbackgroud, "setting.ini", "setup")
-	IniWrite("swap=" settings.hotkey_swap, "setting.ini", "hotkey")
-	IniWrite("close=" settings.hotkey_close, "setting.ini", "hotkey")
-	IniWrite("compare=" settings.hotkey_compare, "setting.ini", "hotkey")
-	
+	setupStr := "position=" settings.postion
+	setupStr .= "`nwidth=" settings.max_width
+	setupStr .= "`nrunbackgroud=" settings.runbackgroud
+	IniWrite(setupStr, "setting.ini", "setup")
+
+	setupStr := "swap=" settings.hotkey_swap
+	setupStr .= "`nclose=" settings.hotkey_close
+	setupStr .= "`ncompare=" settings.hotkey_compare
+	IniWrite(setupStr, "setting.ini", "hotkey")
+
 	if(settings.runbackgroud != settings.init_mode) {
 		MsgBox("Mode Changed`nIn order for the changes to take effect`nPQC is is about to be restarted", "OK", "Owner" pqc_setup.Hwnd)
 		Reload
