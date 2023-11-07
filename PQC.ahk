@@ -1,4 +1,3 @@
-
 if (A_IsCompiled) {
 	debugBorder := ""
 } else {
@@ -37,7 +36,7 @@ settings := Object()
 settings.postion := Abs(Round(IniRead("setting.ini", "setup", "position", "1") + 0))
 settings.postion := Min(Max(1, settings.postion), 4)
 
-settings.max_width := IniRead("setting.ini", "setup", "width", Screen_Width-4*gui_margin)
+settings.max_width := IniRead("setting.ini", "setup", "width", Screen_Width - 4 * gui_margin)
 
 settings.runbackgroud := IniRead("setting.ini", "setup", "runbackgroud", "0") + 0
 
@@ -69,18 +68,18 @@ Gdip_SetSmoothingMode(G_Logo, 4)
 Gdip_SetInterpolationMode(G_Logo, 7)
 
 pBrush := Gdip_BrushCreateSolid(0xff81dad4)
-points := "0," 0.2*info_height
-points .= "|" 0.7*info_height "," 0.2*info_height
-points .= "|" 0.4*info_height "," 0.9*info_height
-points .= "|0," 0.9*info_height
+points := "0," 0.2 * info_height
+points .= "|" 0.7 * info_height "," 0.2 * info_height
+points .= "|" 0.4 * info_height "," 0.9 * info_height
+points .= "|0," 0.9 * info_height
 Gdip_FillPolygon(G_Logo, pBrush, points)
 Gdip_DeleteBrush(pBrush)
 
 pBrush := Gdip_BrushCreateSolid(0xffe9b9a7)
-points := 0.6*info_height "," 0.1*info_height
-points .= "|" info_height "," 0.1*info_height
-points .= "|" info_height "," 0.8*info_height
-points .= "|" 0.3*info_height "," 0.8*info_height
+points := 0.6 * info_height "," 0.1 * info_height
+points .= "|" info_height "," 0.1 * info_height
+points .= "|" info_height "," 0.8 * info_height
+points .= "|" 0.3 * info_height "," 0.8 * info_height
 Gdip_FillPolygon(G_Logo, pBrush, points)
 Gdip_DeleteBrush(pBrush)
 
@@ -126,14 +125,14 @@ if (A_Args.Length > 0) {
 }
 HotIfWinActive "ahk_id" mygui.Hwnd
 if (settings.runbackgroud) {
-	if(settings.hotkey_close != "") {
+	if (settings.hotkey_close != "") {
 		Try {
 			Hotkey settings.hotkey_close, myGui_Hide
 		}
 	}
 	Hotkey "Esc", myGui_Hide
 } else {
-	if(settings.hotkey_close != "") {
+	if (settings.hotkey_close != "") {
 		Try {
 			Hotkey settings.hotkey_close, myGui_Close
 		}
@@ -142,21 +141,20 @@ if (settings.runbackgroud) {
 }
 Hotkey "Space", pic_on_click
 
-if(settings.hotkey_swap != "") {
+if (settings.hotkey_swap != "") {
 	Try {
 		Hotkey settings.hotkey_swap, swap
 	}
 }
 HotIf
 if (settings.runbackgroud) {
-	if(settings.hotkey_compare != "") {
+	if (settings.hotkey_compare != "") {
 		Try {
 			Hotkey settings.hotkey_compare, copyCompare
 		}
 	}
 	TrayTip("Runs in Background.`nSelect pictures and press " hotkey_to_string(settings.hotkey_compare) " to compare.", "PicQuickCompare", 1)
 }
-
 
 #include setup_gui.ahk
 
