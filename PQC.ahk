@@ -181,7 +181,7 @@ sizeToStr(byte) {
 	}
 	byte := Round(byte / 1024, 2)
 	if (byte < 1024) {
-		return byte "kB"
+		return byte "KB"
 	}
 	byte := Round(byte / 1024, 2)
 	if (byte < 1024) {
