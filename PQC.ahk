@@ -1,4 +1,3 @@
-
 if (A_IsCompiled) {
 	debugBorder := ""
 } else {
@@ -37,7 +36,7 @@ settings := Object()
 settings.postion := Abs(Round(IniRead("setting.ini", "setup", "position", "1") + 0))
 settings.postion := Min(Max(1, settings.postion), 4)
 
-settings.max_width := IniRead("setting.ini", "setup", "width", Screen_Width-4*gui_margin)
+settings.max_width := IniRead("setting.ini", "setup", "width", Screen_Width - 4 * gui_margin)
 
 settings.runbackgroud := IniRead("setting.ini", "setup", "runbackgroud", "0") + 0
 
@@ -69,18 +68,18 @@ Gdip_SetSmoothingMode(G_Logo, 4)
 Gdip_SetInterpolationMode(G_Logo, 7)
 
 pBrush := Gdip_BrushCreateSolid(0xff81dad4)
-points := "0," 0.2*info_height
-points .= "|" 0.7*info_height "," 0.2*info_height
-points .= "|" 0.4*info_height "," 0.9*info_height
-points .= "|0," 0.9*info_height
+points := "0," 0.2 * info_height
+points .= "|" 0.7 * info_height "," 0.2 * info_height
+points .= "|" 0.4 * info_height "," 0.9 * info_height
+points .= "|0," 0.9 * info_height
 Gdip_FillPolygon(G_Logo, pBrush, points)
 Gdip_DeleteBrush(pBrush)
 
 pBrush := Gdip_BrushCreateSolid(0xffe9b9a7)
-points := 0.6*info_height "," 0.1*info_height
-points .= "|" info_height "," 0.1*info_height
-points .= "|" info_height "," 0.8*info_height
-points .= "|" 0.3*info_height "," 0.8*info_height
+points := 0.6 * info_height "," 0.1 * info_height
+points .= "|" info_height "," 0.1 * info_height
+points .= "|" info_height "," 0.8 * info_height
+points .= "|" 0.3 * info_height "," 0.8 * info_height
 Gdip_FillPolygon(G_Logo, pBrush, points)
 Gdip_DeleteBrush(pBrush)
 
@@ -126,14 +125,14 @@ if (A_Args.Length > 0) {
 }
 HotIfWinActive "ahk_id" mygui.Hwnd
 if (settings.runbackgroud) {
-	if(settings.hotkey_close != "") {
+	if (settings.hotkey_close != "") {
 		Try {
 			Hotkey settings.hotkey_close, myGui_Hide
 		}
 	}
 	Hotkey "Esc", myGui_Hide
 } else {
-	if(settings.hotkey_close != "") {
+	if (settings.hotkey_close != "") {
 		Try {
 			Hotkey settings.hotkey_close, myGui_Close
 		}
@@ -142,21 +141,20 @@ if (settings.runbackgroud) {
 }
 Hotkey "Space", pic_on_click
 
-if(settings.hotkey_swap != "") {
+if (settings.hotkey_swap != "") {
 	Try {
 		Hotkey settings.hotkey_swap, swap
 	}
 }
 HotIf
 if (settings.runbackgroud) {
-	if(settings.hotkey_compare != "") {
+	if (settings.hotkey_compare != "") {
 		Try {
 			Hotkey settings.hotkey_compare, copyCompare
 		}
 	}
 	TrayTip("Runs in Background.`nSelect pictures and press " hotkey_to_string(settings.hotkey_compare) " to compare.", "PicQuickCompare", 1)
 }
-
 
 #include setup_gui.ahk
 
@@ -181,7 +179,7 @@ sizeToStr(byte) {
 	}
 	byte := Round(byte / 1024, 2)
 	if (byte < 1024) {
-		return byte "kB"
+		return byte "KB"
 	}
 	byte := Round(byte / 1024, 2)
 	if (byte < 1024) {
@@ -237,6 +235,19 @@ pic_on_click(thisGui, GuiCtrlObj*) {
 	}
 }
 
+transparentBrush := Gdip_BrushCreateSolid(0x0000FF00)
+text_measure(G, txt, width, height, fontsize, font) {
+	rc := Gdip_TextToGraphics(G, txt, "R4 Bold NoWrap Center y0 x0 w" width "h" height "c" transparentBrush " s" fontsize, font, 1)
+	RegExMatch(rc, "^(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)", &rect)
+	return rect
+}
+textdraw_measure(G, txt, option, color, font) {
+	pBrush := Gdip_BrushCreateSolid(color)
+	rc := Gdip_TextToGraphics(G, txt, option " c" pBrush, font, 1)
+	Gdip_DeleteBrush(pBrush)
+	RegExMatch(rc, "^(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)", &rect)
+	return rect
+}
 create_pic_bitmap_cache(index) {
 	global picture_array, pic, info_width, info_height
 
@@ -263,16 +274,53 @@ create_pic_bitmap_cache(index) {
 	; create txt info bitmap
 	picture_array[index].pBitmapInfo := Gdip_CreateBitmap(info_width, info_height)
 	picture_array[index].GInfo := Gdip_GraphicsFromImage(picture_array[index].pBitmapInfo)
+	Gdip_SetSmoothingMode(picture_array[index].GInfo, 4)
+	Gdip_SetInterpolationMode(picture_array[index].GInfo, 7)
+	Gdip_SetTextRenderingHint(picture_array[index].GInfo, 4)
+
+	ydraw := info_height // 10
+	if (picture_array[index].exifstr != "") {
+		ydraw := 0
+	}
 
 	RegExMatch(picture_array[index].name, "^(?<filename>.+)\.(?<ext>.*)$", &match)
-	Gdip_TextToGraphics(picture_array[index].GInfo, match.filename, "R4 Bold NoWrap Center Underline y0 x0 w" info_width "h" info_height//3 "cff000000 s" DPIScaledFont(18), "Microsoft JhengHei")
-
-	Gdip_TextToGraphics(picture_array[index].GInfo, StrUpper(match.ext), "R4 Bold NoWrap Center x0 y" info_height//3 " w" info_width//3 "h" info_height//3 "cff800024 s" DPIScaledFont(18), "Arial")
-	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].picSize, "R4 Bold NoWrap Center x" info_width*1//3 " y" info_height//3 " w" info_width//3 "h" info_height//3 "cff00806d s" DPIScaledFont(18), "Arial")
-	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].fileSize, "R4 Bold NoWrap Center x" info_width*2//3 " y" info_height//3 " w" info_width//3 "h" info_height//3 "cff3e0080 s" DPIScaledFont(18), "Arial")
-	if(picture_array[index].exifstr!="") {
-		Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].exifstr, "R4 Bold NoWrap Center x0 y" info_height*2//3 " w" info_width "h" info_height//3 "cff525252 s" DPIScaledFont(18), "Arial")
+	fontsize := 18
+	rect := text_measure(picture_array[index].GInfo, match.filename, info_width * 2.2, info_height // 3, DPIScaledFont(fontsize), "Microsoft JhengHei")
+	if (rect[3] > info_width * 2) {
+		fontsize := 8
 	}
+	while (rect[3] >= info_width) {
+		fontsize := Floor(fontsize / 1.1)
+		if (fontsize <= 12) {
+			break
+		}
+		rect := text_measure(picture_array[index].GInfo, match.filename, info_width * 2.2, info_height // 3, DPIScaledFont(fontsize), "Microsoft JhengHei")
+	}
+
+	rect := textdraw_measure(picture_array[index].GInfo, match.filename, "R4 Bold NoWrap Center y" ydraw " x0 w" info_width "h" info_height // 3 " s" DPIScaledFont(fontsize), 0xFF000000, "Microsoft JhengHei")
+
+	penWidth := Ceil(info_height / 60)
+	pPen := Gdip_CreatePen(0xff323331, penWidth)
+	ydraw := rect[2] + rect[4] + penWidth
+	Gdip_DrawLine(picture_array[index].GInfo, pPen, 10, ydraw, info_width - 10, ydraw)
+	Gdip_DeletePen(pPen)
+	ydraw += penWidth + 6
+
+	rect := text_measure(picture_array[index].GInfo, StrUpper(match.ext), info_width // 3, info_height // 4, DPIScaledFont(16), "Arial")
+	pBrush := Gdip_BrushCreateSolid(0xff800024)
+	Gdip_FillRoundedRectangle(picture_array[index].GInfo, pBrush, rect[1] - 2, ydraw - 4, rect[3] + 4, rect[4] + 4, rect[4] // 4)
+	Gdip_DeleteBrush(pBrush)
+	pBrush := Gdip_BrushCreateSolid(0xFFFFFFFF)
+	Gdip_TextToGraphics(picture_array[index].GInfo, StrUpper(match.ext), "R4 NoWrap Center x0 y" ydraw " w" info_width // 3 "h" info_height // 4 "c" pBrush " s" DPIScaledFont(16), "Arial")
+	Gdip_DeleteBrush(pBrush)
+
+	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].picSize, "R4 NoWrap Center x" info_width * 1 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff00806d s" DPIScaledFont(16), "Arial")
+	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].fileSize, "R4 NoWrap Center x" info_width * 2 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff3e0080 s" DPIScaledFont(16), "Arial")
+	ydraw += info_height // 4
+	if (picture_array[index].exifstr != "") {
+		Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].exifstr, "R4 NoWrap Center x0 y" ydraw " w" info_width "h" info_height // 4 "cff525252 s" DPIScaledFont(16), "Arial")
+	}
+
 	picture_array[index].hBitmapInfo := Gdip_CreateHBITMAPFromBitmap(picture_array[index].pBitmapInfo)
 }
 
@@ -361,7 +409,8 @@ mygui_DropFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
 						picture_array[picCurrentShow].exif.focal := Round(exinfo["System.Photo.FocalLength"])
 						picture_array[picCurrentShow].exif.apture := Round(exinfo["System.Photo.FNumber"], 1)
 						picture_array[picCurrentShow].exif.ISO := exinfo["System.Photo.ISOSpeed"]
-						ex_exposure := ("0" exinfo["System.Photo.ExposureTime"]) + 0
+						ex_exposure := Round(("0" exinfo["System.Photo.ExposureTime"]) + 0, 5)
+						ex_exposure := RegExReplace(ex_exposure, "(?<!\.)0*$", "")
 						if (ex_exposure < 1) {
 							ex_exposure := exinfo["System.Photo.ExposureTimeNumerator"] "/" exinfo["System.Photo.ExposureTimeDenominator"]
 						}
