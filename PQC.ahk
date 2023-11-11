@@ -3,6 +3,7 @@ if (A_IsCompiled) {
 } else {
 	debugBorder := "Border "
 }
+debugFiles := Array()
 MonitorGet(0, &Left, &Top, &Right, &Bottom)
 DPIScale := A_ScreenDPI / 96
 DPIScaled(n) {
@@ -11,8 +12,8 @@ DPIScaled(n) {
 DPIScaledFont(n) {
 	return Round(n * (DPIScale ** 0.5))
 }
-JhengHeiFont := "Microsoft JhengHei"
-ArialFont := "Arial"
+h1Font := "Microsoft JhengHei"
+h2Font := "Lucida Console"
 Screen_Height := Bottom - Top
 Screen_Width := Right - Left
 gui_margin := DPIScaled(10)
@@ -61,6 +62,30 @@ myGui.OnEvent("DropFiles", mygui_DropFiles)
 
 info_width := DPIScaled(334)
 info_height := DPIScaled(66)
+baseSize := {
+	h1Font: DPIScaledFont(22),
+	h2Font: DPIScaledFont(20),
+	h2Height: info_height // 4
+}
+info_fontSizeMeasure(info_height)
+pBrush1 := Gdip_BrushCreateSolid(0xff424242)
+pBrush2 := Gdip_BrushCreateSolid(0xffb2b2b2)
+exif_utils := {
+	pBrush1: pBrush1,
+	pBrush2: pBrush2,
+	exif_font_size: Array(
+		baseSize.h2Font, Round(baseSize.h2Font),
+		baseSize.h2Font, Round(baseSize.h2Font),
+		Round(baseSize.h2Font), baseSize.h2Font,
+		Round(baseSize.h2Font), baseSize.h2Font,
+	),
+	exif_elem_brush: Array(
+		pBrush1, pBrush2,
+		pBrush1, pBrush2,
+		pBrush2, pBrush1,
+		pBrush2, pBrush1,
+	)
+}
 logo := mygui.add("Picture", "x" gui_margin " y+0 w" info_height " h" info_height " 0xE 0x200 " debugBorder,)
 txt_info := mygui.add("Picture", "x+0 yp w" info_width " h" info_height " 0xE 0x200 " debugBorder,)
 
@@ -114,7 +139,18 @@ if (settings.runbackgroud) {
 } else {
 	mygui.Show("AutoSize")
 }
-
+if (!A_IsCompiled) {
+	if (debugFiles.Length > 0) {
+		para_pic := Array()
+		for n, GivenPath in debugFiles {
+			Loop Files, GivenPath, "F"
+				para_pic.Push(A_LoopFileFullPath)
+		}
+		if (para_pic.Length > 0) {
+			mygui_DropFiles(mygui, 0, para_pic, 0, 0)
+		}
+	}
+}
 if (A_Args.Length > 0) {
 	para_pic := Array()
 	for n, GivenPath in A_Args {
@@ -249,8 +285,26 @@ textdraw_measure(G, txt, option, color, font) {
 	RegExMatch(rc, "^(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)", &rect)
 	return rect
 }
+info_fontSizeMeasure(hmax) {
+	global baseSize
+	measureSample := "^_^Tjing"
+	pBitmap := Gdip_CreateBitmap(hmax * 5, hmax)
+	G := Gdip_GraphicsFromImage(pBitmap)
+	Gdip_SetTextRenderingHint(G, 4)
+	rect := text_measure(G, measureSample, hmax * 5, hmax, baseSize.h1Font, h1Font)
+	while (rect[4] > hmax / 3) {
+		baseSize.h1Font -= 1
+		rect := text_measure(G, measureSample, hmax * 5, hmax, baseSize.h1Font, h1Font)
+	}
+	rect := text_measure(G, measureSample, hmax * 5, hmax, baseSize.h2Font, h2Font)
+	while (rect[4] > hmax / 4) {
+		baseSize.h2Font -= 1
+		rect := text_measure(G, measureSample, hmax * 5, hmax, baseSize.h2Font, h2Font)
+	}
+	baseSize.h2Height := rect[4] + 4
+}
 create_pic_bitmap_cache(index) {
-	global picture_array, pic, info_width, info_height
+	global picture_array, pic, info_width, info_height, baseSize, exif_utils
 
 	if (picture_array[index].pBitmap < 0) {
 		return
@@ -279,48 +333,75 @@ create_pic_bitmap_cache(index) {
 	Gdip_SetInterpolationMode(picture_array[index].GInfo, 7)
 	Gdip_SetTextRenderingHint(picture_array[index].GInfo, 4)
 
-	ydraw := 0
+	penWidth := Ceil(DPIScaled(2))
+	pPen := Gdip_CreatePen(0xff323331, penWidth)
+	if (picture_array[index].exifstr != "") {
+		ydraw := (info_height // 2) - (3 * penWidth)
+	} else {
+		ydraw := info_height // 2
+	}
+	Gdip_DrawLine(picture_array[index].GInfo, pPen, 10, ydraw, info_width - 10, ydraw)
+	Gdip_DeletePen(pPen)
+
 	RegExMatch(picture_array[index].name, "^(?<filename>.+)\.(?<ext>.*)$", &match)
-	fontsize := 18
+	fontsize := baseSize.h1Font
 	filename2draw := match.filename
-	rect := text_measure(picture_array[index].GInfo, filename2draw, info_width * 2.2, info_height // 3, DPIScaledFont(fontsize), JhengHeiFont)
+	rect := text_measure(picture_array[index].GInfo, filename2draw, info_width * 2.2, info_height // 2, fontsize, h1Font)
 	while (rect[3] >= info_width) {
 		if (fontsize <= 14) {
 			nameShorten := (StrLen(filename2draw) // 2) - 2
 			while (rect[3] >= info_width) {
 				nameShorten -= 1
 				filenameShorten := SubStr(filename2draw, 1, nameShorten) " ...... " SubStr(filename2draw, -nameShorten)
-				rect := text_measure(picture_array[index].GInfo, filenameShorten, info_width * 2.2, info_height // 3, DPIScaledFont(fontsize), JhengHeiFont)
+				rect := text_measure(picture_array[index].GInfo, filenameShorten, info_width * 2.2, info_height // 2, fontsize, h1Font)
 			}
 			filename2draw := filenameShorten
 			break
 		}
 		fontsize := Floor(fontsize / 1.1)
-		rect := text_measure(picture_array[index].GInfo, filename2draw, info_width * 2.2, info_height // 3, DPIScaledFont(fontsize), JhengHeiFont)
+		rect := text_measure(picture_array[index].GInfo, filename2draw, info_width * 2.2, info_height // 2, fontsize, h1Font)
 	}
-	rect := textdraw_measure(picture_array[index].GInfo, filename2draw, "R4 Bold NoWrap Center y" ydraw " x0 w" info_width "h" info_height // 3 " s" DPIScaledFont(fontsize), 0xFF000000, JhengHeiFont)
+	textdraw_measure(picture_array[index].GInfo, filename2draw, "R4 Bold NoWrap vCenter Center y0 x0 w" info_width "h" ydraw " s" fontsize, 0xFF000000, h1Font)
 
-	penWidth := Ceil(info_height / 60)
-	pPen := Gdip_CreatePen(0xff323331, penWidth)
-	ydraw := rect[2] + rect[4] + penWidth
-	Gdip_DrawLine(picture_array[index].GInfo, pPen, 10, ydraw, info_width - 10, ydraw)
-	Gdip_DeletePen(pPen)
-	ydraw += penWidth + 6
+	ydraw += penWidth * 3
+	rect := text_measure(picture_array[index].GInfo, StrUpper(match.ext), info_width // 3, info_height // 4, baseSize.h2Font, h2Font)
 
-	rect := text_measure(picture_array[index].GInfo, StrUpper(match.ext), info_width // 3, info_height // 4, DPIScaledFont(16), ArialFont)
-	pBrush := Gdip_BrushCreateSolid(0xff800024)
-	Gdip_FillRoundedRectangle(picture_array[index].GInfo, pBrush, rect[1] - 2, ydraw - 4, rect[3] + 4, rect[4] + 4, rect[4] // 4)
+	pBrush := Gdip_BrushCreateSolid(("0xff" hsv2rgb(str2angle(StrUpper(match.ext)))) + 0)
+	Gdip_FillRoundedRectangle(picture_array[index].GInfo, pBrush, rect[1] - 2, ydraw - 4, rect[3] + 4, baseSize.h2Height, baseSize.h2Height // 3)
 	Gdip_DeleteBrush(pBrush)
 	pBrush := Gdip_BrushCreateSolid(0xFFFFFFFF)
-	Gdip_TextToGraphics(picture_array[index].GInfo, StrUpper(match.ext), "R4 NoWrap Center x0 y" ydraw " w" info_width // 3 "h" info_height // 4 "c" pBrush " s" DPIScaledFont(16), ArialFont)
+	Gdip_TextToGraphics(picture_array[index].GInfo, StrUpper(match.ext), "R4 NoWrap vCenter Center x0 y" ydraw " w" info_width // 3 "h" info_height // 4 "c" pBrush " s" baseSize.h2Font, h2Font)
 	Gdip_DeleteBrush(pBrush)
 
-	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].picSize, "R4 NoWrap Center x" info_width * 1 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff00806d s" DPIScaledFont(16), ArialFont)
-	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].fileSize, "R4 NoWrap Center x" info_width * 2 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff3e0080 s" DPIScaledFont(16), ArialFont)
+	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].picSize, "R4 NoWrap vCenter Center x" info_width * 1 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff" hsv2rgb(180, 220, 170) " s" baseSize.h2Font, h2Font)
+	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].fileSize, "R4 NoWrap vCenter Center x" info_width * 2 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff" hsv2rgb(350, 220, 170) " s" baseSize.h2Font, h2Font)
 
 	ydraw += rect[4] + 4
 	if (picture_array[index].exifstr != "") {
-		Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].exifstr, "R4 NoWrap Center x0 y" ydraw " w" info_width "h" info_height // 4 "cff525252 s" DPIScaledFont(16), ArialFont)
+		exif := Array(
+			"" picture_array[index].exif.focal, "mm",
+			"" picture_array[index].exif.exposure, "s",
+			"f/", "" picture_array[index].exif.apture,
+			"ISO", "" picture_array[index].exif.ISO
+		)
+
+		exif_elem_x := Array()
+		exif_width := Array()
+		loop exif.Length {
+			rect := text_measure(picture_array[index].GInfo, exif[A_Index], info_width // 4, info_height // 4, exif_utils.exif_font_size[A_Index], h2Font)
+			exif_width.Push(rect[3])
+		}
+
+		loop exif.Length // 2 {
+			w := exif_width[A_Index * 2 - 1] + exif_width[A_Index * 2]
+			x := Floor((A_Index - 0.5) * (info_width // 4)) - (w // 2)
+			exif_elem_x.Push(x)
+			exif_elem_x.Push(x + exif_width[A_Index * 2 - 1] - DPIScaled(4))
+		}
+
+		loop exif.Length {
+			Gdip_TextToGraphics(picture_array[index].GInfo, exif[A_Index], "R4 NoWrap vCenter Center x" exif_elem_x[A_Index] " y" ydraw " w" exif_width[A_Index] "h" info_height // 4 "c" exif_utils.exif_elem_brush[A_Index] " s" exif_utils.exif_font_size[A_Index], h2Font)
+		}
 	}
 
 	picture_array[index].hBitmapInfo := Gdip_CreateHBITMAPFromBitmap(picture_array[index].pBitmapInfo)
@@ -359,8 +440,6 @@ pic_ctrl_set_size() {
 	percent *= Min(maxW / (h_max * percent * ratio), 1)
 	ctrlH := Round(h_max * percent) + 1
 	ctrlW := Round(ctrlH * ratio) + 1
-	; MsgBox("h_max=" h_max "`nw_max=" w_max "`nmaxH=" maxH "`nmaxW=" maxW)
-	; MsgBox("W=" W "`nH=" H "`nctrlW=" ctrlW "`nctrlH=" ctrlH "`nDPIScale=" DPIScale "`npercent=" percent)
 	pic.Move(10, , ctrlW, ctrlH)
 	for _, inf in info {
 		inf.Move(Max(ctrlW - DPIScaled(90), DPIScaled(410)))
@@ -474,9 +553,52 @@ HBitmapFromResource(resName) {
 
 	pBitmap := 0
 	DllCall("Gdiplus.dll\GdipCreateBitmapFromStream", "Ptr", pStream, "Ptr*", &pBitmap)
-	; pBitmap := pGDI.CreateBitmapFromStream(pStream)
 	hBitmap := Gdip_CreateHBITMAPFromBitmap(pBitmap)
 	Gdip_DisposeImage(pBitmap)
 	ObjRelease(pStream)
 	Return hBitmap
+}
+
+str2angle(str) {
+	t := 0xDEAD
+	loop parse str {
+		t := (t * t ^ Ord(A_LoopField)) & 0xFFFF
+	}
+	return Mod(t, 360)
+}
+hsv2rgb(hue, sat := 100, bri := 180)
+{
+	hi := Mod(hue // 60, 6)
+	f := hue / 60 - hi
+	p := bri * (256 - sat) / 256
+	q := bri * (256 - f * sat) / 256
+	t := bri * (65536 - (256 - f) * sat) / 65536
+	If (hi = 0)
+	{
+		r := bri, g := t, b := p
+	}
+	Else If (hi = 1)
+	{
+		r := q, g := bri, b := p
+	}
+	Else If (hi = 2)
+	{
+		r := p, g := bri, b := t
+	}
+	Else If (hi = 3)
+	{
+		r := p, g := q, b := bri
+	}
+	Else If (hi = 4)
+	{
+		r := t, g := p, b := bri
+	}
+	Else If (hi = 5)
+	{
+		r := bri, g := p, b := q
+	}
+	r := Round(r)
+	g := Round(g)
+	b := Round(b)
+	Return Format("{1:02X}{2:02X}{3:02X}", r, g, b)
 }
