@@ -277,11 +277,7 @@ create_pic_bitmap_cache(index) {
 	Gdip_SetInterpolationMode(picture_array[index].GInfo, 7)
 	Gdip_SetTextRenderingHint(picture_array[index].GInfo, 4)
 
-	ydraw := info_height // 10
-	if (picture_array[index].exifstr != "") {
-		ydraw := 0
-	}
-
+	ydraw := 0
 	RegExMatch(picture_array[index].name, "^(?<filename>.+)\.(?<ext>.*)$", &match)
 	fontsize := 18
 	rect := text_measure(picture_array[index].GInfo, match.filename, info_width * 2.2, info_height // 3, DPIScaledFont(fontsize), "Microsoft JhengHei")
@@ -315,7 +311,8 @@ create_pic_bitmap_cache(index) {
 
 	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].picSize, "R4 NoWrap Center x" info_width * 1 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff00806d s" DPIScaledFont(16), "Arial")
 	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].fileSize, "R4 NoWrap Center x" info_width * 2 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff3e0080 s" DPIScaledFont(16), "Arial")
-	ydraw += info_height // 4
+
+	ydraw += rect[4] + 4
 	if (picture_array[index].exifstr != "") {
 		Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].exifstr, "R4 NoWrap Center x0 y" ydraw " w" info_width "h" info_height // 4 "cff525252 s" DPIScaledFont(16), "Arial")
 	}
