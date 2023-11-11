@@ -396,9 +396,7 @@ create_pic_bitmap_cache(index) {
 
 		loop exif.Length {
 			Gdip_TextToGraphics(picture_array[index].GInfo, exif[A_Index], "R4 NoWrap vCenter Center x" exif_elem_x[A_Index] " y" ydraw " w" exif_width[A_Index] "h" info_height // 4 "c" exif_elem_brush[A_Index] " s" exif_font_size[A_Index], h2Font)
-			; Gdip_FillRectangle(picture_array[index].GInfo, pBrush2, exif_elem_x[A_Index], ydraw, exif_width[A_Index], baseSize.h2Height)
 		}
-		; Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].exifstr, "R4 NoWrap vCenter Center x0 y" ydraw " w" info_width "h" info_height // 4 "c" pBrush " s" baseSize.h2Font, h2Font)
 		Gdip_DeleteBrush(pBrush1)
 		Gdip_DeleteBrush(pBrush2)
 	}
@@ -439,8 +437,6 @@ pic_ctrl_set_size() {
 	percent *= Min(maxW / (h_max * percent * ratio), 1)
 	ctrlH := Round(h_max * percent) + 1
 	ctrlW := Round(ctrlH * ratio) + 1
-	; MsgBox("h_max=" h_max "`nw_max=" w_max "`nmaxH=" maxH "`nmaxW=" maxW)
-	; MsgBox("W=" W "`nH=" H "`nctrlW=" ctrlW "`nctrlH=" ctrlH "`nDPIScale=" DPIScale "`npercent=" percent)
 	pic.Move(10, , ctrlW, ctrlH)
 	for _, inf in info {
 		inf.Move(Max(ctrlW - DPIScaled(90), DPIScaled(410)))
@@ -554,7 +550,6 @@ HBitmapFromResource(resName) {
 
 	pBitmap := 0
 	DllCall("Gdiplus.dll\GdipCreateBitmapFromStream", "Ptr", pStream, "Ptr*", &pBitmap)
-	; pBitmap := pGDI.CreateBitmapFromStream(pStream)
 	hBitmap := Gdip_CreateHBITMAPFromBitmap(pBitmap)
 	Gdip_DisposeImage(pBitmap)
 	ObjRelease(pStream)
