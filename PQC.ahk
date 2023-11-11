@@ -49,7 +49,7 @@ settings.init_mode := settings.runbackgroud
 
 #include Gdip_All.ahk
 pGDI := Gdip_Startup()
-
+transparentBrush := Gdip_BrushCreateSolid(0x0000FF00)
 mygui := Gui("-AlwaysOnTop -ToolWindow -SysMenu -Owner -DpiScale")
 mygui.MarginX := gui_margin
 mygui.MarginY := gui_margin
@@ -235,7 +235,6 @@ pic_on_click(thisGui, GuiCtrlObj*) {
 	}
 }
 
-transparentBrush := Gdip_BrushCreateSolid(0x0000FF00)
 text_measure(G, txt, width, height, fontsize, font) {
 	rc := Gdip_TextToGraphics(G, txt, "R4 Bold NoWrap Center y0 x0 w" width "h" height "c" transparentBrush " s" fontsize, font, 1)
 	RegExMatch(rc, "^(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)", &rect)
