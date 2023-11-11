@@ -1,6 +1,6 @@
 FileEncoding("UTF-8")
 appName := "PicQuickCompare"
-version := "0.3.1"
+version := "0.3.2"
 versionFilename := "version.txt"
 ahkFilename := "app.ahk"
 binaryFilename := "PicQuickCompare.exe"
@@ -11,6 +11,11 @@ downloadUrl := "/" GitHubID "/" repoName "/releases/latest/download/"
 update_log := "
 (
 v0.3.X 更新日志汇总
+
+------ v0.3.2 ------
+1. 优化显示，限制最小字号，过长文件名自动截断
+2. 优化部分显示
+3. 修复traymenu中GitHub page指向的链接
 
 ------ v0.3.1 ------
 1. 自适应文件名字体大小

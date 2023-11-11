@@ -26,7 +26,7 @@ setTray()
 		}
 		tray.add()
 	}
-	tray.add("Github 页面", gotoWebpage_maker("https://github.com/Nigh/ahk-autoupdate-template"))
+	tray.add("Github 页面", gotoWebpage_maker("https://github.com/Nigh/PicQuickCompare"))
 	tray.add("Donate 捐助", gotoWebpage_maker("https://ko-fi.com/xianii"))
 	tray.add("Exit", trayExit)
 	tray.ClickCount := 1

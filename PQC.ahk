@@ -11,6 +11,8 @@ DPIScaled(n) {
 DPIScaledFont(n) {
 	return Round(n * (DPIScale ** 0.5))
 }
+JhengHeiFont := "Microsoft JhengHei"
+ArialFont := "Arial"
 Screen_Height := Bottom - Top
 Screen_Width := Right - Left
 gui_margin := DPIScaled(10)
@@ -49,7 +51,7 @@ settings.init_mode := settings.runbackgroud
 
 #include Gdip_All.ahk
 pGDI := Gdip_Startup()
-
+transparentBrush := Gdip_BrushCreateSolid(0x0000FF00)
 mygui := Gui("-AlwaysOnTop -ToolWindow -SysMenu -Owner -DpiScale")
 mygui.MarginX := gui_margin
 mygui.MarginY := gui_margin
@@ -235,7 +237,6 @@ pic_on_click(thisGui, GuiCtrlObj*) {
 	}
 }
 
-transparentBrush := Gdip_BrushCreateSolid(0x0000FF00)
 text_measure(G, txt, width, height, fontsize, font) {
 	rc := Gdip_TextToGraphics(G, txt, "R4 Bold NoWrap Center y0 x0 w" width "h" height "c" transparentBrush " s" fontsize, font, 1)
 	RegExMatch(rc, "^(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)\.?\d*\|(\d+)", &rect)
@@ -278,26 +279,26 @@ create_pic_bitmap_cache(index) {
 	Gdip_SetInterpolationMode(picture_array[index].GInfo, 7)
 	Gdip_SetTextRenderingHint(picture_array[index].GInfo, 4)
 
-	ydraw := info_height // 10
-	if (picture_array[index].exifstr != "") {
-		ydraw := 0
-	}
-
+	ydraw := 0
 	RegExMatch(picture_array[index].name, "^(?<filename>.+)\.(?<ext>.*)$", &match)
 	fontsize := 18
-	rect := text_measure(picture_array[index].GInfo, match.filename, info_width * 2.2, info_height // 3, DPIScaledFont(fontsize), "Microsoft JhengHei")
-	if (rect[3] > info_width * 2) {
-		fontsize := 8
-	}
+	filename2draw := match.filename
+	rect := text_measure(picture_array[index].GInfo, filename2draw, info_width * 2.2, info_height // 3, DPIScaledFont(fontsize), JhengHeiFont)
 	while (rect[3] >= info_width) {
-		fontsize := Floor(fontsize / 1.1)
-		if (fontsize <= 12) {
+		if (fontsize <= 14) {
+			nameShorten := (StrLen(filename2draw) // 2) - 2
+			while (rect[3] >= info_width) {
+				nameShorten -= 1
+				filenameShorten := SubStr(filename2draw, 1, nameShorten) " ...... " SubStr(filename2draw, -nameShorten)
+				rect := text_measure(picture_array[index].GInfo, filenameShorten, info_width * 2.2, info_height // 3, DPIScaledFont(fontsize), JhengHeiFont)
+			}
+			filename2draw := filenameShorten
 			break
 		}
-		rect := text_measure(picture_array[index].GInfo, match.filename, info_width * 2.2, info_height // 3, DPIScaledFont(fontsize), "Microsoft JhengHei")
+		fontsize := Floor(fontsize / 1.1)
+		rect := text_measure(picture_array[index].GInfo, filename2draw, info_width * 2.2, info_height // 3, DPIScaledFont(fontsize), JhengHeiFont)
 	}
-
-	rect := textdraw_measure(picture_array[index].GInfo, match.filename, "R4 Bold NoWrap Center y" ydraw " x0 w" info_width "h" info_height // 3 " s" DPIScaledFont(fontsize), 0xFF000000, "Microsoft JhengHei")
+	rect := textdraw_measure(picture_array[index].GInfo, filename2draw, "R4 Bold NoWrap Center y" ydraw " x0 w" info_width "h" info_height // 3 " s" DPIScaledFont(fontsize), 0xFF000000, JhengHeiFont)
 
 	penWidth := Ceil(info_height / 60)
 	pPen := Gdip_CreatePen(0xff323331, penWidth)
@@ -306,19 +307,20 @@ create_pic_bitmap_cache(index) {
 	Gdip_DeletePen(pPen)
 	ydraw += penWidth + 6
 
-	rect := text_measure(picture_array[index].GInfo, StrUpper(match.ext), info_width // 3, info_height // 4, DPIScaledFont(16), "Arial")
+	rect := text_measure(picture_array[index].GInfo, StrUpper(match.ext), info_width // 3, info_height // 4, DPIScaledFont(16), ArialFont)
 	pBrush := Gdip_BrushCreateSolid(0xff800024)
 	Gdip_FillRoundedRectangle(picture_array[index].GInfo, pBrush, rect[1] - 2, ydraw - 4, rect[3] + 4, rect[4] + 4, rect[4] // 4)
 	Gdip_DeleteBrush(pBrush)
 	pBrush := Gdip_BrushCreateSolid(0xFFFFFFFF)
-	Gdip_TextToGraphics(picture_array[index].GInfo, StrUpper(match.ext), "R4 NoWrap Center x0 y" ydraw " w" info_width // 3 "h" info_height // 4 "c" pBrush " s" DPIScaledFont(16), "Arial")
+	Gdip_TextToGraphics(picture_array[index].GInfo, StrUpper(match.ext), "R4 NoWrap Center x0 y" ydraw " w" info_width // 3 "h" info_height // 4 "c" pBrush " s" DPIScaledFont(16), ArialFont)
 	Gdip_DeleteBrush(pBrush)
 
-	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].picSize, "R4 NoWrap Center x" info_width * 1 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff00806d s" DPIScaledFont(16), "Arial")
-	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].fileSize, "R4 NoWrap Center x" info_width * 2 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff3e0080 s" DPIScaledFont(16), "Arial")
-	ydraw += info_height // 4
+	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].picSize, "R4 NoWrap Center x" info_width * 1 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff00806d s" DPIScaledFont(16), ArialFont)
+	Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].fileSize, "R4 NoWrap Center x" info_width * 2 // 3 " y" ydraw " w" info_width // 3 "h" info_height // 4 "cff3e0080 s" DPIScaledFont(16), ArialFont)
+
+	ydraw += rect[4] + 4
 	if (picture_array[index].exifstr != "") {
-		Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].exifstr, "R4 NoWrap Center x0 y" ydraw " w" info_width "h" info_height // 4 "cff525252 s" DPIScaledFont(16), "Arial")
+		Gdip_TextToGraphics(picture_array[index].GInfo, picture_array[index].exifstr, "R4 NoWrap Center x0 y" ydraw " w" info_width "h" info_height // 4 "cff525252 s" DPIScaledFont(16), ArialFont)
 	}
 
 	picture_array[index].hBitmapInfo := Gdip_CreateHBITMAPFromBitmap(picture_array[index].pBitmapInfo)
