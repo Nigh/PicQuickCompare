@@ -68,6 +68,24 @@ baseSize := {
 	h2Height: info_height // 4
 }
 info_fontSizeMeasure(info_height)
+pBrush1 := Gdip_BrushCreateSolid(0xff424242)
+pBrush2 := Gdip_BrushCreateSolid(0xffb2b2b2)
+exif_utils := {
+	pBrush1: pBrush1,
+	pBrush2: pBrush2,
+	exif_font_size: Array(
+		baseSize.h2Font, Round(baseSize.h2Font),
+		baseSize.h2Font, Round(baseSize.h2Font),
+		Round(baseSize.h2Font), baseSize.h2Font,
+		Round(baseSize.h2Font), baseSize.h2Font,
+	),
+	exif_elem_brush: Array(
+		pBrush1, pBrush2,
+		pBrush1, pBrush2,
+		pBrush2, pBrush1,
+		pBrush2, pBrush1,
+	)
+}
 logo := mygui.add("Picture", "x" gui_margin " y+0 w" info_height " h" info_height " 0xE 0x200 " debugBorder,)
 txt_info := mygui.add("Picture", "x+0 yp w" info_width " h" info_height " 0xE 0x200 " debugBorder,)
 
@@ -286,7 +304,7 @@ info_fontSizeMeasure(hmax) {
 	baseSize.h2Height := rect[4] + 4
 }
 create_pic_bitmap_cache(index) {
-	global picture_array, pic, info_width, info_height, baseSize
+	global picture_array, pic, info_width, info_height, baseSize, exif_utils
 
 	if (picture_array[index].pBitmap < 0) {
 		return
@@ -360,30 +378,17 @@ create_pic_bitmap_cache(index) {
 
 	ydraw += rect[4] + 4
 	if (picture_array[index].exifstr != "") {
-		pBrush1 := Gdip_BrushCreateSolid(0xff424242)
-		pBrush2 := Gdip_BrushCreateSolid(0xffb2b2b2)
 		exif := Array(
 			"" picture_array[index].exif.focal, "mm",
 			"" picture_array[index].exif.exposure, "s",
 			"f/", "" picture_array[index].exif.apture,
 			"ISO", "" picture_array[index].exif.ISO
 		)
-		exif_font_size := Array(
-			baseSize.h2Font, Round(baseSize.h2Font),
-			baseSize.h2Font, Round(baseSize.h2Font),
-			Round(baseSize.h2Font), baseSize.h2Font,
-			Round(baseSize.h2Font), baseSize.h2Font,
-		)
-		exif_elem_brush := Array(
-			pBrush1, pBrush2,
-			pBrush1, pBrush2,
-			pBrush2, pBrush1,
-			pBrush2, pBrush1,
-		)
+
 		exif_elem_x := Array()
 		exif_width := Array()
 		loop exif.Length {
-			rect := text_measure(picture_array[index].GInfo, exif[A_Index], info_width // 4, info_height // 4, exif_font_size[A_Index], h2Font)
+			rect := text_measure(picture_array[index].GInfo, exif[A_Index], info_width // 4, info_height // 4, exif_utils.exif_font_size[A_Index], h2Font)
 			exif_width.Push(rect[3])
 		}
 
@@ -395,10 +400,8 @@ create_pic_bitmap_cache(index) {
 		}
 
 		loop exif.Length {
-			Gdip_TextToGraphics(picture_array[index].GInfo, exif[A_Index], "R4 NoWrap vCenter Center x" exif_elem_x[A_Index] " y" ydraw " w" exif_width[A_Index] "h" info_height // 4 "c" exif_elem_brush[A_Index] " s" exif_font_size[A_Index], h2Font)
+			Gdip_TextToGraphics(picture_array[index].GInfo, exif[A_Index], "R4 NoWrap vCenter Center x" exif_elem_x[A_Index] " y" ydraw " w" exif_width[A_Index] "h" info_height // 4 "c" exif_utils.exif_elem_brush[A_Index] " s" exif_utils.exif_font_size[A_Index], h2Font)
 		}
-		Gdip_DeleteBrush(pBrush1)
-		Gdip_DeleteBrush(pBrush2)
 	}
 
 	picture_array[index].hBitmapInfo := Gdip_CreateHBITMAPFromBitmap(picture_array[index].pBitmapInfo)
