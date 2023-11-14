@@ -105,12 +105,13 @@ Gdip_FillPolygon(G_Logo, pBrush, points)
 Gdip_DeleteBrush(pBrush)
 
 pBrush := Gdip_BrushCreateSolid(0xffe9b9a7)
-points := 0.6 * info_height "," 0.1 * info_height
-points .= "|" info_height "," 0.1 * info_height
-points .= "|" info_height "," 0.8 * info_height
-points .= "|" 0.3 * info_height "," 0.8 * info_height
+points := 0.6 * info_height "," 0.05 * info_height
+points .= "|" info_height "," 0.05 * info_height
+points .= "|" info_height "," 0.75 * info_height
+points .= "|" 0.3 * info_height "," 0.75 * info_height
 Gdip_FillPolygon(G_Logo, pBrush, points)
 Gdip_DeleteBrush(pBrush)
+Gdip_TextToGraphics(G_Logo, "v" . version, "x0 y0 w" info_height " h" info_height "Bottom Right cff000000 s" DPIScaledFont(12) " R4 Bold", "MV Boli")
 
 hBitmapLogo := Gdip_CreateHBITMAPFromBitmap(pBitmapLogo)
 SetImage(logo.hwnd, hBitmapLogo)
@@ -132,9 +133,8 @@ pic.OnEvent("DoubleClick", pic_on_click)
 
 mygui.SetFont("s" DPIScaledFont(8) " Q5 Norm", "Comic Sans MS")
 info := Array()
-info.Push(mygui.Add("Text", debugBorder "x" DPIScaled(420) " ys h0", "v" . version))
-info.Push(mygui.Add("Link", debugBorder "xp y+0 hp", 'bilibili: <a href="https://space.bilibili.com/895523">TecNico</a>'))
-info.Push(mygui.Add("Link", debugBorder "xp y+0 hp", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
+info.Push(mygui.Add("Link", debugBorder "x" DPIScaled(420) " w" DPIScaled(90) " ys", 'bilibili: <a href="https://space.bilibili.com/895523">TecNico</a>'))
+info.Push(mygui.Add("Link", debugBorder "xp y+0 hp wp", 'GitHub: <a href="https://github.com/Nigh">xianii</a>'))
 
 if (settings.runbackgroud) {
 	mygui.Show("AutoSize Hide")
