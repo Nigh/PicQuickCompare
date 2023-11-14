@@ -410,7 +410,7 @@ create_pic_bitmap_cache(index) {
 }
 
 pic_ctrl_set_size() {
-	global picture_array, pic, Screen_Width, Screen_Height, info
+	global picture_array, pic, Screen_Width, Screen_Height, info, gui_margin
 	h_max := 0
 	w_max := 0
 	ratio := 0
@@ -442,7 +442,12 @@ pic_ctrl_set_size() {
 	percent *= Min(maxW / (h_max * percent * ratio), 1)
 	ctrlH := Round(h_max * percent) + 1
 	ctrlW := Round(ctrlH * ratio) + 1
-	pic.Move(10, , ctrlW, ctrlH)
+	ctrlX := gui_margin
+	if (ctrlW < DPIScaled(500)) {
+		ctrlW := DPIScaled(500)
+		ctrlX := (DPIScaled(520) - ctrlW) // 2
+	}
+	pic.Move(ctrlX, , ctrlW, ctrlH)
 	for _, inf in info {
 		inf.Move(Max(ctrlW - DPIScaled(90), DPIScaled(410)))
 	}
