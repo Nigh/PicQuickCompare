@@ -1,6 +1,6 @@
 FileEncoding("UTF-8")
 appName := "PicQuickCompare"
-version := "0.3.3"
+version := "0.3.4"
 versionFilename := "version.txt"
 ahkFilename := "app.ahk"
 binaryFilename := "PicQuickCompare.exe"
@@ -11,6 +11,12 @@ downloadUrl := "/" GitHubID "/" repoName "/releases/latest/download/"
 update_log := "
 (
 v0.3.X 更新日志汇总
+
+------ v0.3.4 ------
+1. 增加最大高度设置
+2. 宽度小于界面的图片居中显示
+3. 扩展名背景色跟随扩展名变化
+4. 版本号覆盖在logo上显示
 
 ------ v0.3.3 ------
 1. 优化字号尺寸自动测量
