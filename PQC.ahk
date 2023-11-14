@@ -48,7 +48,7 @@ settings.postion := Abs(Round(IniRead("setting.ini", "setup", "position", "1") +
 settings.postion := Min(Max(1, settings.postion), 4)
 
 settings.max_width := IniRead("setting.ini", "setup", "width", Screen_Width - 4 * gui_margin)
-settings.max_height := IniRead("setting.ini", "setup", "height", Screen_Height - 4 * gui_margin - info_height - DPIScaled(20))
+settings.max_height := IniRead("setting.ini", "setup", "height", Screen_Height - 4 * gui_margin - info_height - DPIScaled(100))
 
 settings.runbackgroud := IniRead("setting.ini", "setup", "runbackgroud", "0") + 0
 

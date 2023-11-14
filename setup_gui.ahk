@@ -41,7 +41,7 @@ setup_maxwidth := pqc_setup.Add("Slider", "ToolTipBottom Thick" width_range item
 pqc_setup.SetFont(h2FontStyle)
 pqc_setup.Add("Text", "xs " header_gap, "Max Height")
 pqc_setup.SetFont(textFontStyle)
-height_range := " Range" Screen_Height // 4 + info_height "-" Screen_Height - 4 * mygui.MarginY - info_height - DPIScaled(20) " TickInterval" Screen_Height // 12 " "
+height_range := " Range" Screen_Height // 4 + info_height "-" Screen_Height - 4 * mygui.MarginY - info_height - DPIScaled(100) " TickInterval" Screen_Height // 12 " "
 setup_maxheight := pqc_setup.Add("Slider", "ToolTipBottom Thick" height_range item_gap "w" clientWidth - 2 * padding, Screen_Width - 4 * mygui.MarginX)
 
 pqc_setup.SetFont(h2FontStyle)
