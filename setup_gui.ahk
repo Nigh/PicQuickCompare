@@ -1,5 +1,3 @@
-
-
 h2FontStyle := "s" DPIScaled(18) " w600 c505050 q5"
 textFontStyle := "s" DPIScaled(10) " w400 cblack q5"
 clientWidth := DPIScaled(360)
@@ -12,9 +10,9 @@ padding := DPIScaled(20)
 pqc_setup := Gui("+ToolWindow +AlwaysOnTop -SysMenu -DPIScale +OwnDialogs +Owner" mygui.Hwnd, "setup")
 
 if A_IsCompiled {
-	pqc_setup.Add("Picture", "x" gui_margin " y" gui_margin " h" DPIScaledFont(32)*2 " w-1 Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
+	pqc_setup.Add("Picture", "x" gui_margin " y" gui_margin " h" DPIScaledFont(32) * 2 " w-1 Section", "HBITMAP:" HBitmapFromResource("app_title.png"))
 } else {
-	pqc_setup.Add("Picture", "x" gui_margin " y" gui_margin " h" DPIScaledFont(32)*2 " w-1 Section", "app_title.png")
+	pqc_setup.Add("Picture", "x" gui_margin " y" gui_margin " h" DPIScaledFont(32) * 2 " w-1 Section", "app_title.png")
 }
 
 pqc_setup.SetFont(, "Consolas")
@@ -29,7 +27,7 @@ pqc_setup.SetFont(h2FontStyle)
 pqc_setup.Add("Text", "x" padding " y+" DPIScaled(10) " section", "Position")
 pqc_setup.SetFont(textFontStyle)
 setup_position := Array()
-setup_position.Push(pqc_setup.Add("Radio", item_gap "w" (clientWidth-2*padding)//4, "free"))
+setup_position.Push(pqc_setup.Add("Radio", item_gap "w" (clientWidth - 2 * padding) // 4, "free"))
 setup_position.Push(pqc_setup.Add("Radio", "x+0 wp", "left"))
 setup_position.Push(pqc_setup.Add("Radio", "x+0 wp", "center"))
 setup_position.Push(pqc_setup.Add("Radio", "x+0 wp", "right"))
@@ -37,8 +35,14 @@ setup_position.Push(pqc_setup.Add("Radio", "x+0 wp", "right"))
 pqc_setup.SetFont(h2FontStyle)
 pqc_setup.Add("Text", "xs " header_gap, "Max Width")
 pqc_setup.SetFont(textFontStyle)
-width_range := " Range" Screen_Width//4 "-" Screen_Width-4*mygui.MarginX " TickInterval" Screen_Width//12 " "
-setup_maxwidth := pqc_setup.Add("Slider", "ToolTipBottom Thick" width_range "vSetup_Width" item_gap "w" clientWidth-2*padding, Screen_Width-4*mygui.MarginX)
+width_range := " Range" Screen_Width // 4 "-" Screen_Width - 4 * mygui.MarginX " TickInterval" Screen_Width // 12 " "
+setup_maxwidth := pqc_setup.Add("Slider", "ToolTipBottom Thick" width_range item_gap "w" clientWidth - 2 * padding, Screen_Width - 4 * mygui.MarginX)
+
+pqc_setup.SetFont(h2FontStyle)
+pqc_setup.Add("Text", "xs " header_gap, "Max Height")
+pqc_setup.SetFont(textFontStyle)
+height_range := " Range" Screen_Height // 4 + info_height "-" Screen_Height - 4 * mygui.MarginY - info_height - DPIScaled(20) " TickInterval" Screen_Height // 12 " "
+setup_maxheight := pqc_setup.Add("Slider", "ToolTipBottom Thick" height_range item_gap "w" clientWidth - 2 * padding, Screen_Width - 4 * mygui.MarginX)
 
 pqc_setup.SetFont(h2FontStyle)
 pqc_setup.Add("Text", "xs " header_gap, "Mode")
@@ -50,7 +54,7 @@ pqc_setup.SetFont(h2FontStyle)
 pqc_setup.Add("Text", "xs " header_gap, "Hotkeys")
 
 pqc_setup.SetFont(textFontStyle)
-setup_hotkey_swap := pqc_setup.Add("Hotkey", item_gap "w" clientWidth-2*padding-hotkeyWinWidth)
+setup_hotkey_swap := pqc_setup.Add("Hotkey", item_gap "w" clientWidth - 2 * padding - hotkeyWinWidth)
 setup_hotkeyWin1 := pqc_setup.Add("CheckBox", "x+10 hp w" hotkeyWinWidth, "win")
 pqc_setup.SetFont("s10")
 pqc_setup.Add("Text", "xs" item_gap, "Swap hotkey is ")
@@ -60,7 +64,7 @@ setup_hotkey_swap.OnEvent("Change", hotkey_swap_text_update)
 setup_hotkeyWin1.OnEvent("Click", hotkey_swap_text_update)
 
 pqc_setup.SetFont(textFontStyle)
-setup_hotkey_close := pqc_setup.Add("Hotkey", "xs " item_gap "w" clientWidth-2*padding-hotkeyWinWidth)
+setup_hotkey_close := pqc_setup.Add("Hotkey", "xs " item_gap "w" clientWidth - 2 * padding - hotkeyWinWidth)
 setup_hotkeyWin2 := pqc_setup.Add("CheckBox", "x+10 hp w" hotkeyWinWidth, "win")
 pqc_setup.SetFont("s10")
 pqc_setup.Add("Text", "xs" item_gap, "Close hotkey is ")
@@ -70,7 +74,7 @@ setup_hotkey_close.OnEvent("Change", hotkey_close_text_update)
 setup_hotkeyWin2.OnEvent("Click", hotkey_close_text_update)
 
 pqc_setup.SetFont(textFontStyle)
-setup_hotkey_compare := pqc_setup.Add("Hotkey", "xs " item_gap "w" clientWidth-2*padding-hotkeyWinWidth)
+setup_hotkey_compare := pqc_setup.Add("Hotkey", "xs " item_gap "w" clientWidth - 2 * padding - hotkeyWinWidth)
 setup_hotkeyWin3 := pqc_setup.Add("CheckBox", "x+10 hp w" hotkeyWinWidth, "win")
 pqc_setup.SetFont("s10")
 pqc_setup.Add("Text", "xs" item_gap, "Compare hotkey is ")
@@ -86,7 +90,7 @@ saveBtn.OnEvent("Click", pqc_setup_save)
 cancelBtn.OnEvent("Click", pqc_setup_cancel)
 
 pqc_setup.SetFont("s" DPIScaled(6))
-pqc_setup.Add("Link", "xs y+0 w" clientWidth-3*padding " right", 'Visit <a href="https://github.com/Nigh/PicQuickCompare">GitHub Page</a> for more info')
+pqc_setup.Add("Link", "xs y+0 w" clientWidth - 3 * padding " right", 'Visit <a href="https://github.com/Nigh/PicQuickCompare">GitHub Page</a> for more info')
 pqc_setup.OnEvent("Close", pqc_setup_cancel)
 
 pqc_setup_cancel(*) {
@@ -98,7 +102,7 @@ pqc_setup_cancel(*) {
 
 compare_hotkey_state_update(*) {
 	global
-	if(setup_mode.Value > 0) {
+	if (setup_mode.Value > 0) {
 		setup_hotkey_compare.Opt("-Disabled")
 		setup_hotkeyWin3.Opt("-Disabled")
 		hotkey_compare_text_update()
@@ -111,31 +115,33 @@ compare_hotkey_state_update(*) {
 
 pqc_setup_save(*) {
 	global
-	for k,v in setup_position {
-		if(v.Value) {
+	for k, v in setup_position {
+		if (v.Value) {
 			settings.postion := k
 			break
 		}
 	}
 	settings.max_width := setup_maxwidth.Value
+	settings.max_height := setup_maxheight.Value
 	settings.runbackgroud := setup_mode.Value
 
 	settings.hotkey_swap := setup_hotkey_swap.Value
 	settings.hotkey_close := setup_hotkey_close.Value
 	settings.hotkey_compare := setup_hotkey_compare.Value
 
-	if(setup_hotkeyWin1.Value) {
+	if (setup_hotkeyWin1.Value) {
 		settings.hotkey_swap := "#" settings.hotkey_swap
 	}
-	if(setup_hotkeyWin2.Value) {
+	if (setup_hotkeyWin2.Value) {
 		settings.hotkey_close := "#" settings.hotkey_close
 	}
-	if(setup_hotkeyWin3.Value) {
+	if (setup_hotkeyWin3.Value) {
 		settings.hotkey_compare := "#" settings.hotkey_compare
 	}
 
 	setupStr := "position=" settings.postion
 	setupStr .= "`nwidth=" settings.max_width
+	setupStr .= "`nheight=" settings.max_height
 	setupStr .= "`nrunbackgroud=" settings.runbackgroud
 	IniWrite(setupStr, "setting.ini", "setup")
 
@@ -144,11 +150,11 @@ pqc_setup_save(*) {
 	setupStr .= "`ncompare=" settings.hotkey_compare
 	IniWrite(setupStr, "setting.ini", "hotkey")
 
-	if(settings.runbackgroud != settings.init_mode) {
+	if (settings.runbackgroud != settings.init_mode) {
 		MsgBox("Mode Changed`nIn order for the changes to take effect`nPQC is is about to be restarted", "OK", "Owner" pqc_setup.Hwnd)
 		Reload
 	}
-	if(settings.init_hotkeys != settings.hotkey_swap "|" settings.hotkey_close "|" settings.hotkey_compare) {
+	if (settings.init_hotkeys != settings.hotkey_swap "|" settings.hotkey_close "|" settings.hotkey_compare) {
 		MsgBox("Hotkey Changed`nIn order for the changes to take effect`nPQC is is about to be restarted", "OK", "Owner" pqc_setup.Hwnd)
 		Reload
 	}
@@ -189,6 +195,7 @@ pqc_setup_show() {
 	global
 	setup_position[settings.postion].Value := 1
 	setup_maxwidth.Value := settings.max_width
+	setup_maxheight.Value := settings.max_height
 
 	setup_hotkey_swap.Value := RegExReplace(settings.hotkey_swap, "#")
 	setup_hotkeyWin1.Value := RegExMatch(settings.hotkey_swap, "#")

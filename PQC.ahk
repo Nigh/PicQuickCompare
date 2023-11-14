@@ -34,12 +34,21 @@ loop 2
 		hBitmapInfo: 0
 	})
 
+info_width := DPIScaled(334)
+info_height := DPIScaled(66)
+baseSize := {
+	h1Font: DPIScaledFont(22),
+	h2Font: DPIScaledFont(20),
+	h2Height: info_height // 4
+}
+
 settings := Object()
 
 settings.postion := Abs(Round(IniRead("setting.ini", "setup", "position", "1") + 0))
 settings.postion := Min(Max(1, settings.postion), 4)
 
 settings.max_width := IniRead("setting.ini", "setup", "width", Screen_Width - 4 * gui_margin)
+settings.max_height := IniRead("setting.ini", "setup", "height", Screen_Height - 4 * gui_margin - info_height - DPIScaled(20))
 
 settings.runbackgroud := IniRead("setting.ini", "setup", "runbackgroud", "0") + 0
 
@@ -60,13 +69,6 @@ mygui.Title := appName
 myGui.OnEvent("Close", myGui_Close)
 myGui.OnEvent("DropFiles", mygui_DropFiles)
 
-info_width := DPIScaled(334)
-info_height := DPIScaled(66)
-baseSize := {
-	h1Font: DPIScaledFont(22),
-	h2Font: DPIScaledFont(20),
-	h2Height: info_height // 4
-}
 info_fontSizeMeasure(info_height)
 pBrush1 := Gdip_BrushCreateSolid(0xff424242)
 pBrush2 := Gdip_BrushCreateSolid(0xffb2b2b2)
@@ -432,7 +434,7 @@ pic_ctrl_set_size() {
 	minW := DPIScaled(400)
 	minH := DPIScaled(400)
 	maxW := settings.max_width
-	maxH := 0.85 * Screen_Height
+	maxH := settings.max_height
 
 	percent := 1
 	percent := Min(percent, maxH / h_max)
